@@ -7,8 +7,9 @@ import { useBusiness } from "@/state/businessStore";
 import { formatNaira } from "@/lib/utils";
 import { calculateDailySummary } from "@/lib/calculations";
 import { Separator } from "@/components/ui/separator";
-import RecentTransactions from "@/components/dashboard/RecentTransactions"; // Import new component
-import DebtReminders from "@/components/dashboard/DebtReminders"; // Import new component
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import DebtReminders from "@/components/dashboard/DebtReminders";
+import WeekOverWeekSalesCard from "@/components/dashboard/WeekOverWeekSalesCard"; // Import new component
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -97,6 +98,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentTransactions />
           <DebtReminders />
+          <WeekOverWeekSalesCard /> {/* Add the new sales trend card here */}
         </div>
       </div>
     </div>
