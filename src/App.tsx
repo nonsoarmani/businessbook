@@ -12,6 +12,7 @@ import Debts from "./pages/Debts";
 import Receipts from "./pages/Receipts";
 import Reports from "./pages/Reports";
 import CashFlow from "./pages/CashFlow";
+import Settings from "./pages/Settings"; // Import the new Settings page
 import { BusinessProvider } from "./state/businessStore";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="receipts" element={<Receipts />} />
               <Route path="reports" element={<Reports />} />
               <Route path="cash-flow" element={<CashFlow />} />
+              <Route path="settings" element={<Settings />} /> {/* Add the new settings route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>
