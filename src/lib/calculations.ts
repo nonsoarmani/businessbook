@@ -257,3 +257,20 @@ export const getMonthlyCashFlowData = (sales: Sale[], expenses: Expense[], numbe
 
   return sortedData;
 };
+
+export const calculateTopSellingItems = (sales: Sale[], startDate: Date, endDate: Date, limit: number = 5) => {
+  const filteredSales = sales.filter(sale => {
+    const saleDate = new Date(sale.date);
+    return saleDate >= startDate && saleDate <= endDate;
+  });
+
+  const itemSales: { [item: string]: number } = {};
+  filteredSales.forEach(sale => {
+    itemSales[sale.item] = (itemSales[sale.item] || 0) + sale.amount;
+  });
+
+  return Object.entries(itemSales)
+    .map(([item, totalAmount]) => ({ item, totalAmount }))
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .slice(0, limit);
+};

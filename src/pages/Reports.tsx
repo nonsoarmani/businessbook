@@ -2,6 +2,7 @@ import React from 'react';
 import DailyReportCard from '@/components/reports/DailyReportCard';
 import MonthlySalesChart from '@/components/reports/MonthlySalesChart';
 import ExpenseCategoryReport from '@/components/reports/ExpenseCategoryReport';
+import TopSellingItemsReport from '@/components/reports/TopSellingItemsReport'; // Import new component
 import { Separator } from '@/components/ui/separator';
 
 const Reports = () => {
@@ -11,8 +12,9 @@ const Reports = () => {
       <p className="text-gray-600">Gain insights into your business performance.</p>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-8">
           <DailyReportCard />
+          <TopSellingItemsReport /> {/* Add TopSellingItemsReport here */}
         </div>
         <div className="lg:col-span-2 space-y-8">
           <MonthlySalesChart />
