@@ -18,6 +18,13 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
   switch (action.type) {
     case 'ADD_SALE':
       return { ...state, sales: [...state.sales, action.payload] };
+    case 'UPDATE_SALE': // New case for updating sales
+      return {
+        ...state,
+        sales: state.sales.map(sale =>
+          sale.id === action.payload.id ? { ...sale, ...action.payload } : sale
+        ),
+      };
     case 'ADD_EXPENSE':
       return { ...state, expenses: [...state.expenses, action.payload] };
     case 'ADD_DEBT':

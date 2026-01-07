@@ -12,12 +12,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpDown, Download } from 'lucide-react';
+import { ArrowUpDown, Download, Edit } from 'lucide-react'; // Import Edit icon
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, formatDate, exportToCSV } from '@/lib/utils';
 import { Sale } from '@/types';
 import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner'; // Ensure toast is imported
+import EditSaleDialog from './EditSaleDialog'; // Import the new dialog
 
 type SortKey = keyof Sale | null;
 type SortDirection = 'asc' | 'desc';
@@ -28,6 +30,8 @@ const SalesHistoryTable = () => {
   const [filter, setFilter] = useState<'all' | 'today' | 'thisWeek' | 'thisMonth'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [isEditSaleDialogOpen, setIsEditSaleDialogOpen] = useState(false);
+  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   const filteredSales = useMemo(() => {
     const now = new Date();
@@ -79,6 +83,11 @@ const SalesHistoryTable = () => {
       setSortKey(key);
       setSortDirection('desc'); // Default to newest first for date, or asc for others
     }
+  };
+
+  const handleEditSale = (sale: Sale) => {
+    setSelectedSale(sale);
+    setIsEditSaleDialogOpen(true);
   };
 
   const handleExportCSV = () => {
@@ -176,6 +185,7 @@ const SalesHistoryTable = () => {
               </TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead>Customer</TableHead>
+              <TableHead className="text-right">Actions</TableHead> {/* New column for actions */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -187,11 +197,16 @@ const SalesHistoryTable = () => {
                   <TableCell>{formatNaira(sale.amount)}</TableCell>
                   <TableCell>{sale.paymentMethod}</TableCell>
                   <TableCell>{sale.customerName || 'N/A'}</TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => handleEditSale(sale)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   No sales found for the selected criteria.
                 </TableCell>
               </TableRow>
@@ -199,6 +214,14 @@ const SalesHistoryTable = () => {
           </TableBody>
         </Table>
       </div>
+
+      {selectedSale && (
+        <EditSaleDialog
+          sale={selectedSale}
+          open={isEditSaleDialogOpen}
+          onOpenChange={setIsEditSaleDialogOpen}
+        />
+      )}
     </div>
   );
 };

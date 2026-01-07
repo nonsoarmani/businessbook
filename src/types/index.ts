@@ -55,6 +55,7 @@ export interface BusinessState {
 
 export type BusinessAction =
   | { type: 'ADD_SALE'; payload: Sale }
+  | { type: 'UPDATE_SALE'; payload: Partial<Sale> & { id: string } } // New action for updating sales
   | { type: 'ADD_EXPENSE'; payload: Expense }
   | { type: 'ADD_DEBT'; payload: Debt }
   | { type: 'UPDATE_DEBT'; payload: Partial<Debt> & { id: string } }
