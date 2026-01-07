@@ -1,5 +1,5 @@
 import { Sale, Expense, Debt } from "@/types";
-import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks, format, parseISO, addDays, differenceInDays } from 'date-fns';
+import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks, format, parseISO, addDays, differenceInDays, getMonth, getYear } from 'date-fns';
 
 export const calculateTotalSales = (sales: Sale[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all', customStartDate?: Date, customEndDate?: Date): number => {
   const now = new Date();
@@ -169,4 +169,36 @@ export const calculateDaysOverdue = (dueDate: Date): number => {
 
 export const calculateDaysToCollect = (dateGiven: Date, datePaid: Date): number => {
   return differenceInDays(new Date(datePaid), new Date(dateGiven));
+};
+
+export const getMonthlySalesData = (sales: Sale[], numberOfMonths: number = 6) => {
+  const monthlySales: { [key: string]: number } = {};
+  const now = new Date();
+
+  // Initialize for the last `numberOfMonths`
+  for (let i = 0; i < numberOfMonths; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthYear = format(date, 'MMM yyyy');
+    monthlySales[monthYear] = 0;
+  }
+
+  sales.forEach(sale => {
+    const saleDate = new Date(sale.date);
+    const monthYear = format(saleDate, 'MMM yyyy');
+    if (monthlySales.hasOwnProperty(monthYear)) {
+      monthlySales[monthYear] += sale.amount;
+    }
+  });
+
+  // Convert to array and sort by date
+  const sortedData = Object.keys(monthlySales)
+    .map(key => ({
+      name: key,
+      sales: monthlySales[key],
+      date: parseISO(key.replace(' ', ' 1, ')) // Create a comparable date object
+    }))
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map(({ name, sales }) => ({ name, sales })); // Remove temporary date field
+
+  return sortedData;
 };
