@@ -25,7 +25,7 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
           sale.id === action.payload.id ? { ...sale, ...action.payload } : sale
         ),
       };
-    case 'DELETE_SALE': // New case for deleting sales
+    case 'DELETE_SALE':
       return {
         ...state,
         sales: state.sales.filter(sale => sale.id !== action.payload.id),
@@ -38,6 +38,11 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         expenses: state.expenses.map(expense =>
           expense.id === action.payload.id ? { ...expense, ...action.payload } : expense
         ),
+      };
+    case 'DELETE_EXPENSE': // New case for deleting expenses
+      return {
+        ...state,
+        expenses: state.expenses.filter(expense => expense.id !== action.payload.id),
       };
     case 'ADD_DEBT':
       return { ...state, debts: [...state.debts, action.payload] };

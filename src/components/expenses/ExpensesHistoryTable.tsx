@@ -14,13 +14,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { ArrowUpDown, Download, CalendarIcon, Edit } from 'lucide-react'; // Import Edit icon
+import { ArrowUpDown, Download, CalendarIcon, Edit, Trash2 } from 'lucide-react'; // Import Trash2 icon
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, formatDate, exportToCSV, cn } from '@/lib/utils';
 import { Expense } from '@/types';
 import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { toast } from 'sonner';
-import EditExpenseDialog from './EditExpenseDialog'; // Import the new dialog
+import EditExpenseDialog from './EditExpenseDialog';
+import DeleteExpenseDialog from './DeleteExpenseDialog'; // Import the new dialog
 
 type SortKey = keyof Expense | null;
 type SortDirection = 'asc' | 'desc';
@@ -44,8 +45,9 @@ const ExpensesHistoryTable = () => {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false); // State for dialog
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null); // State for selected expense
+  const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false);
+  const [isDeleteExpenseDialogOpen, setIsDeleteExpenseDialogOpen] = useState(false); // State for delete dialog
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   const filteredExpenses = useMemo(() => {
     let expensesToFilter = state.expenses;
@@ -104,6 +106,11 @@ const ExpensesHistoryTable = () => {
   const handleEditExpense = (expense: Expense) => {
     setSelectedExpense(expense);
     setIsEditExpenseDialogOpen(true);
+  };
+
+  const handleDeleteExpense = (expense: Expense) => {
+    setSelectedExpense(expense);
+    setIsDeleteExpenseDialogOpen(true);
   };
 
   const handleExportCSV = () => {
@@ -213,9 +220,12 @@ const ExpensesHistoryTable = () => {
                   <TableCell>{expense.name}</TableCell>
                   <TableCell>{expense.category}</TableCell>
                   <TableCell>{formatNaira(expense.amount)}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => handleEditExpense(expense)}>
                       <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteExpense(expense)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -232,11 +242,18 @@ const ExpensesHistoryTable = () => {
       </div>
 
       {selectedExpense && (
-        <EditExpenseDialog
-          expense={selectedExpense}
-          open={isEditExpenseDialogOpen}
-          onOpenChange={setIsEditExpenseDialogOpen}
-        />
+        <>
+          <EditExpenseDialog
+            expense={selectedExpense}
+            open={isEditExpenseDialogOpen}
+            onOpenChange={setIsEditExpenseDialogOpen}
+          />
+          <DeleteExpenseDialog
+            expense={selectedExpense}
+            open={isDeleteExpenseDialogOpen}
+            onOpenChange={setIsDeleteExpenseDialogOpen}
+          />
+        </>
       )}
     </div>
   );
