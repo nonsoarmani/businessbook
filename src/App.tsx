@@ -5,6 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Layout from "./components/Layout";
+import Sales from "./pages/Sales";
+import Expenses from "./pages/Expenses";
+import Debts from "./pages/Debts";
+import Receipts from "./pages/Receipts";
+import Reports from "./pages/Reports";
+import CashFlow from "./pages/CashFlow";
+import { BusinessProvider } from "./state/businessStore";
 
 const queryClient = new QueryClient();
 
@@ -13,13 +21,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <BusinessProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="sales" element={<Sales />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="debts" element={<Debts />} />
+              <Route path="receipts" element={<Receipts />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="cash-flow" element={<CashFlow />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </BusinessProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
