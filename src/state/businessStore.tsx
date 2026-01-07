@@ -2,14 +2,14 @@
 
 import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
 import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt } from '@/types';
-import useLocalStorage from '@/hooks/useLocalStorage'; // Import the new hook
+import useLocalStorage from '@/hooks/useLocalStorage';
 
 const initialState: BusinessState = {
   sales: [],
   expenses: [],
   debts: [],
   receipts: [],
-  businessName: "My Business", // Default values
+  businessName: "My Business",
   businessPhone: "08012345678",
   businessLocation: "Lagos, Nigeria",
 };
@@ -18,7 +18,7 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
   switch (action.type) {
     case 'ADD_SALE':
       return { ...state, sales: [...state.sales, action.payload] };
-    case 'UPDATE_SALE': // New case for updating sales
+    case 'UPDATE_SALE':
       return {
         ...state,
         sales: state.sales.map(sale =>
@@ -27,6 +27,13 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       };
     case 'ADD_EXPENSE':
       return { ...state, expenses: [...state.expenses, action.payload] };
+    case 'UPDATE_EXPENSE': // New case for updating expenses
+      return {
+        ...state,
+        expenses: state.expenses.map(expense =>
+          expense.id === action.payload.id ? { ...expense, ...action.payload } : expense
+        ),
+      };
     case 'ADD_DEBT':
       return { ...state, debts: [...state.debts, action.payload] };
     case 'UPDATE_DEBT':
@@ -67,13 +74,10 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
-  // Use useLocalStorage to get and set the state
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
 
-  // Initialize useReducer with the persisted state
   const [state, dispatch] = useReducer(businessReducer, persistedState);
 
-  // Effect to update local storage whenever the state changes
   useEffect(() => {
     setPersistedState(state);
   }, [state, setPersistedState]);
