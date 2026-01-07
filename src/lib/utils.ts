@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format, parseISO } from 'date-fns';
+import { BusinessState } from '@/types'; // Import BusinessState
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,4 +68,66 @@ export function exportToCSV<T extends Record<string, any>>(filename: string, dat
     link.click();
     document.body.removeChild(link);
   }
+}
+
+export function exportAllBusinessDataToCSV(state: BusinessState) {
+  const now = new Date();
+  const timestamp = format(now, 'yyyyMMdd_HHmmss');
+
+  // Export Sales
+  const salesHeaders = ['ID', 'Date', 'Item', 'Amount', 'Payment Method', 'Customer Name', 'Customer Phone', 'Note'];
+  const salesData = state.sales.map(sale => ({
+    ID: sale.id,
+    Date: formatDate(sale.date),
+    Item: sale.item,
+    Amount: sale.amount,
+    'Payment Method': sale.paymentMethod,
+    'Customer Name': sale.customerName || '',
+    'Customer Phone': sale.customerPhone || '',
+    Note: sale.note || '',
+  }));
+  exportToCSV(`sales_data_${timestamp}`, salesData, salesHeaders);
+
+  // Export Expenses
+  const expensesHeaders = ['ID', 'Date', 'Name', 'Amount', 'Category'];
+  const expensesData = state.expenses.map(expense => ({
+    ID: expense.id,
+    Date: formatDate(expense.date),
+    Name: expense.name,
+    Amount: expense.amount,
+    Category: expense.category,
+  }));
+  exportToCSV(`expenses_data_${timestamp}`, expensesData, expensesHeaders);
+
+  // Export Debts
+  const debtsHeaders = ['ID', 'Customer Name', 'Phone', 'Original Amount', 'Amount Owed', 'Date Given', 'Due Date', 'Items Sold', 'Status', 'Paid Amount', 'Date Paid'];
+  const debtsData = state.debts.map(debt => ({
+    ID: debt.id,
+    'Customer Name': debt.customerName,
+    Phone: debt.phone,
+    'Original Amount': debt.originalAmount,
+    'Amount Owed': debt.amountOwed,
+    'Date Given': formatDate(debt.dateGiven),
+    'Due Date': formatDate(debt.dueDate),
+    'Items Sold': debt.itemsSold,
+    Status: debt.status,
+    'Paid Amount': debt.paidAmount || 0,
+    'Date Paid': debt.datePaid ? formatDate(debt.datePaid) : '',
+  }));
+  exportToCSV(`debts_data_${timestamp}`, debtsData, debtsHeaders);
+
+  // Export Receipts
+  const receiptsHeaders = ['ID', 'Receipt Number', 'Date', 'Customer Name', 'Customer Phone', 'Items', 'Amount', 'Payment Method', 'Linked Sale ID'];
+  const receiptsData = state.receipts.map(receipt => ({
+    ID: receipt.id,
+    'Receipt Number': receipt.receiptNumber,
+    Date: formatDate(receipt.date),
+    'Customer Name': receipt.customerName,
+    'Customer Phone': receipt.customerPhone || '',
+    Items: receipt.items,
+    Amount: receipt.amount,
+    'Payment Method': receipt.paymentMethod,
+    'Linked Sale ID': receipt.linkedSaleId || '',
+  }));
+  exportToCSV(`receipts_data_${timestamp}`, receiptsData, receiptsHeaders);
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import BusinessInfoForm from '@/components/settings/BusinessInfoForm';
-import ResetDataCard from '@/components/settings/ResetDataCard'; // Import new component
+import ResetDataCard from '@/components/settings/ResetDataCard';
+import ExportDataCard from '@/components/settings/ExportDataCard'; // Import new component
 import { Separator } from '@/components/ui/separator';
 
 const Settings = () => {
@@ -11,7 +12,10 @@ const Settings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <BusinessInfoForm />
-        <ResetDataCard /> {/* Add the new ResetDataCard here */}
+        <div className="space-y-8"> {/* Grouping related cards */}
+          <ExportDataCard /> {/* Add the new ExportDataCard here */}
+          <ResetDataCard />
+        </div>
       </div>
     </div>
   );
