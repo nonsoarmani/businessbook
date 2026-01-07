@@ -202,3 +202,58 @@ export const getMonthlySalesData = (sales: Sale[], numberOfMonths: number = 6) =
 
   return sortedData;
 };
+
+export const calculateCurrentCashBalance = (sales: Sale[], expenses: Expense[]): number => {
+  const totalSalesCashAndTransfer = sales
+    .filter(sale => sale.paymentMethod === 'Cash' || sale.paymentMethod === 'Transfer' || sale.paymentMethod === 'POS')
+    .reduce((sum, sale) => sum + sale.amount, 0);
+
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
+  return totalSalesCashAndTransfer - totalExpenses;
+};
+
+export const getMonthlyCashFlowData = (sales: Sale[], expenses: Expense[], numberOfMonths: number = 6) => {
+  const monthlyCashFlow: { [key: string]: { sales: number; expenses: number; netFlow: number; date: Date } } = {};
+  const now = new Date();
+
+  // Initialize for the last `numberOfMonths`
+  for (let i = 0; i < numberOfMonths; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthYear = format(date, 'MMM yyyy');
+    monthlyCashFlow[monthYear] = { sales: 0, expenses: 0, netFlow: 0, date: date };
+  }
+
+  sales.forEach(sale => {
+    const saleDate = new Date(sale.date);
+    const monthYear = format(saleDate, 'MMM yyyy');
+    if (monthlyCashFlow.hasOwnProperty(monthYear) && (sale.paymentMethod === 'Cash' || sale.paymentMethod === 'Transfer' || sale.paymentMethod === 'POS')) {
+      monthlyCashFlow[monthYear].sales += sale.amount;
+    }
+  });
+
+  expenses.forEach(expense => {
+    const expenseDate = new Date(expense.date);
+    const monthYear = format(expenseDate, 'MMM yyyy');
+    if (monthlyCashFlow.hasOwnProperty(monthYear)) {
+      monthlyCashFlow[monthYear].expenses += expense.amount;
+    }
+  });
+
+  // Calculate net flow and convert to array
+  const sortedData = Object.keys(monthlyCashFlow)
+    .map(key => {
+      const data = monthlyCashFlow[key];
+      return {
+        name: key,
+        sales: data.sales,
+        expenses: data.expenses,
+        netFlow: data.sales - data.expenses,
+        date: data.date
+      };
+    })
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map(({ name, sales, expenses, netFlow }) => ({ name, sales, expenses, netFlow })); // Remove temporary date field
+
+  return sortedData;
+};
