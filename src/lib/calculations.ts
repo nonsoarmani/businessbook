@@ -274,3 +274,47 @@ export const calculateTopSellingItems = (sales: Sale[], startDate: Date, endDate
     .sort((a, b) => b.totalAmount - a.totalAmount)
     .slice(0, limit);
 };
+
+export const calculateTopCustomersBySales = (sales: Sale[], limit: number = 3) => {
+  const customerSales: { [key: string]: { name: string; phone: string; totalSales: number } } = {};
+
+  sales.forEach(sale => {
+    if (sale.customerName) {
+      const key = `${sale.customerName}|${sale.customerPhone || ''}`;
+      if (!customerSales[key]) {
+        customerSales[key] = { name: sale.customerName, phone: sale.customerPhone || 'N/A', totalSales: 0 };
+      }
+      customerSales[key].totalSales += sale.amount;
+    }
+  });
+
+  return Object.values(customerSales)
+    .sort((a, b) => b.totalSales - a.totalSales)
+    .slice(0, limit);
+};
+
+export const calculateTopCustomersByOutstandingDebt = (debts: Debt[], limit: number = 3) => {
+  const customerDebts: { [key: string]: { name: string; phone: string; totalDebt: number } } = {};
+
+  debts.filter(debt => debt.status !== 'paid').forEach(debt => {
+    const key = `${debt.customerName}|${debt.phone}`;
+    if (!customerDebts[key]) {
+      customerDebts[key] = { name: debt.customerName, phone: debt.phone, totalDebt: 0 };
+    }
+    customerDebts[key].totalDebt += debt.amountOwed;
+  });
+
+  return Object.values(customerDebts)
+    .sort((a, b) => b.totalDebt - a.totalDebt)
+    .slice(0, limit);
+};
+
+export const calculateAverageDebtCollectionTime = (debts: Debt[]): number => {
+  const collectedTimes = debts
+    .filter(debt => debt.status === 'paid' && debt.datePaid && debt.dateGiven)
+    .map(debt => calculateDaysToCollect(debt.dateGiven, debt.datePaid!));
+
+  if (collectedTimes.length === 0) return 0;
+  const totalDays = collectedTimes.reduce((sum, days) => sum + days, 0);
+  return totalDays / collectedTimes.length;
+};
