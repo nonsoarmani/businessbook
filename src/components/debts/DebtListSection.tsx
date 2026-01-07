@@ -5,14 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ChevronDown, ChevronUp, Phone, MessageCircle, CheckCircle, Wallet, Scale, Edit } from 'lucide-react'; // Import Edit icon
+import { ChevronDown, ChevronUp, Phone, MessageCircle, CheckCircle, Wallet, Scale, Edit, Trash2 } from 'lucide-react'; // Import Trash2 icon
 import { cn, formatNaira, formatDate } from '@/lib/utils';
 import { Debt } from '@/types';
 import { calculateDaysOverdue, getDebtStatus } from '@/lib/calculations';
 import MarkPaidDialog from './MarkPaidDialog';
 import PaidPartialDialog from './PaidPartialDialog';
 import SendReminderDialog from './SendReminderDialog';
-import EditDebtDialog from './EditDebtDialog'; // Import the new dialog
+import EditDebtDialog from './EditDebtDialog';
+import DeleteDebtDialog from './DeleteDebtDialog'; // Import the new dialog
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -29,12 +30,13 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPaidPartialDialogOpen, setIsPaidPartialDialogOpen] = useState(false);
   const [isSendReminderDialogOpen, setIsSendReminderDialogOpen] = useState(false);
-  const [isEditDebtDialogOpen, setIsEditDebtDialogOpen] = useState(false); // State for edit dialog
+  const [isEditDebtDialogOpen, setIsEditDebtDialogOpen] = useState(false);
+  const [isDeleteDebtDialogOpen, setIsDeleteDebtDialogOpen] = useState(false); // State for delete dialog
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   const totalAmount = debts.reduce((sum, debt) => sum + debt.amountOwed, 0);
 
-  const handleAction = (debt: Debt, actionType: 'markPaid' | 'paidPartial' | 'sendReminder' | 'call' | 'edit') => {
+  const handleAction = (debt: Debt, actionType: 'markPaid' | 'paidPartial' | 'sendReminder' | 'call' | 'edit' | 'delete') => {
     setSelectedDebt(debt);
     if (actionType === 'markPaid') {
       setIsMarkPaidDialogOpen(true);
@@ -47,6 +49,8 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
       toast.info(`Calling ${debt.customerName} at ${debt.phone}...`);
     } else if (actionType === 'edit') {
       setIsEditDebtDialogOpen(true);
+    } else if (actionType === 'delete') { // Handle delete action
+      setIsDeleteDebtDialogOpen(true);
     }
   };
 
@@ -77,6 +81,9 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
         <Button variant="ghost" size="sm" onClick={() => handleAction(debt, 'edit')}>
           <Edit className="h-4 w-4" />
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => handleAction(debt, 'delete')}> {/* New delete button */}
+          <Trash2 className="h-4 w-4 text-red-500" />
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -91,7 +98,7 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
                 <TableHead>Customer</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>{type === 'overdue' ? 'Status' : 'Due Date'}</TableHead>
-                <TableHead className="w-[300px]">Actions</TableHead> {/* Adjusted width for new button */}
+                <TableHead className="w-[350px]">Actions</TableHead> {/* Adjusted width for new button */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,6 +141,11 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
             debt={selectedDebt}
             open={isEditDebtDialogOpen}
             onOpenChange={setIsEditDebtDialogOpen}
+          />
+          <DeleteDebtDialog
+            debt={selectedDebt}
+            open={isDeleteDebtDialogOpen}
+            onOpenChange={setIsDeleteDebtDialogOpen}
           />
         </>
       )}
