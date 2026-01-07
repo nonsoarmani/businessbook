@@ -1,22 +1,23 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, HandCoins, Wallet, Scale, CheckCircle, Info, Landmark } from "lucide-react"; // Import Landmark icon
+import { PlusCircle, HandCoins, Wallet, Scale, CheckCircle, Info, Landmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBusiness } from "@/state/businessStore";
 import { formatNaira } from "@/lib/utils";
-import { calculateDailySummary, calculateCurrentCashBalance } from "@/lib/calculations"; // Import calculateCurrentCashBalance
+import { calculateDailySummary, calculateCurrentCashBalance } from "@/lib/calculations";
 import { Separator } from "@/components/ui/separator";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import DebtReminders from "@/components/dashboard/DebtReminders";
 import WeekOverWeekSalesCard from "@/components/dashboard/WeekOverWeekSalesCard";
+import TotalOutstandingDebtsCard from "@/components/dashboard/TotalOutstandingDebtsCard"; // Import new component
 import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { state } = useBusiness();
   const today = new Date();
   const { totalSales, totalExpenses, profitLoss } = calculateDailySummary(state.sales, state.expenses, today);
-  const currentCashBalance = calculateCurrentCashBalance(state.sales, state.expenses); // Calculate current cash balance
+  const currentCashBalance = calculateCurrentCashBalance(state.sales, state.expenses);
 
   return (
     <div className="min-h-full flex flex-col">
@@ -102,6 +103,7 @@ const Index = () => {
           <RecentTransactions />
           <DebtReminders />
           <WeekOverWeekSalesCard />
+          <TotalOutstandingDebtsCard /> {/* Add the new card here */}
         </div>
       </div>
     </div>
