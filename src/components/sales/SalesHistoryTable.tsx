@@ -12,14 +12,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpDown, Download, Edit } from 'lucide-react'; // Import Edit icon
+import { ArrowUpDown, Download, Edit, Trash2 } from 'lucide-react'; // Import Trash2 icon
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, formatDate, exportToCSV } from '@/lib/utils';
 import { Sale } from '@/types';
 import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner'; // Ensure toast is imported
-import EditSaleDialog from './EditSaleDialog'; // Import the new dialog
+import { toast } from 'sonner';
+import EditSaleDialog from './EditSaleDialog';
+import DeleteSaleDialog from './DeleteSaleDialog'; // Import the new dialog
 
 type SortKey = keyof Sale | null;
 type SortDirection = 'asc' | 'desc';
@@ -31,6 +32,7 @@ const SalesHistoryTable = () => {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isEditSaleDialogOpen, setIsEditSaleDialogOpen] = useState(false);
+  const [isDeleteSaleDialogOpen, setIsDeleteSaleDialogOpen] = useState(false); // State for delete dialog
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   const filteredSales = useMemo(() => {
@@ -88,6 +90,11 @@ const SalesHistoryTable = () => {
   const handleEditSale = (sale: Sale) => {
     setSelectedSale(sale);
     setIsEditSaleDialogOpen(true);
+  };
+
+  const handleDeleteSale = (sale: Sale) => {
+    setSelectedSale(sale);
+    setIsDeleteSaleDialogOpen(true);
   };
 
   const handleExportCSV = () => {
@@ -185,7 +192,7 @@ const SalesHistoryTable = () => {
               </TableHead>
               <TableHead>Payment Method</TableHead>
               <TableHead>Customer</TableHead>
-              <TableHead className="text-right">Actions</TableHead> {/* New column for actions */}
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -197,9 +204,12 @@ const SalesHistoryTable = () => {
                   <TableCell>{formatNaira(sale.amount)}</TableCell>
                   <TableCell>{sale.paymentMethod}</TableCell>
                   <TableCell>{sale.customerName || 'N/A'}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => handleEditSale(sale)}>
                       <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDeleteSale(sale)}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -216,11 +226,18 @@ const SalesHistoryTable = () => {
       </div>
 
       {selectedSale && (
-        <EditSaleDialog
-          sale={selectedSale}
-          open={isEditSaleDialogOpen}
-          onOpenChange={setIsEditSaleDialogOpen}
-        />
+        <>
+          <EditSaleDialog
+            sale={selectedSale}
+            open={isEditSaleDialogOpen}
+            onOpenChange={setIsEditSaleDialogOpen}
+          />
+          <DeleteSaleDialog
+            sale={selectedSale}
+            open={isDeleteSaleDialogOpen}
+            onOpenChange={setIsDeleteSaleDialogOpen}
+          />
+        </>
       )}
     </div>
   );
