@@ -69,7 +69,7 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       };
     case 'ADD_RECEIPT':
       return { ...state, receipts: [...state.receipts, action.payload] };
-    case 'UPDATE_RECEIPT': // New case for updating receipts
+    case 'UPDATE_RECEIPT':
       return {
         ...state,
         receipts: state.receipts.map(receipt =>
@@ -87,6 +87,42 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         businessName: action.payload.businessName,
         businessPhone: action.payload.businessPhone,
         businessLocation: action.payload.businessLocation,
+      };
+    case 'UPDATE_CUSTOMER_DETAILS':
+      const { oldName, oldPhone, newName, newPhone } = action.payload;
+      return {
+        ...state,
+        sales: state.sales.map(sale =>
+          (sale.customerName === oldName && sale.customerPhone === oldPhone) ||
+          (sale.customerName === oldName && !oldPhone && !sale.customerPhone) // Handle cases where phone might be undefined
+            ? { ...sale, customerName: newName, customerPhone: newPhone }
+            : sale
+        ),
+        debts: state.debts.map(debt =>
+          (debt.customerName === oldName && debt.phone === oldPhone)
+            ? { ...debt, customerName: newName, phone: newPhone }
+            : debt
+        ),
+        receipts: state.receipts.map(receipt =>
+          (receipt.customerName === oldName && receipt.customerPhone === oldPhone) ||
+          (receipt.customerName === oldName && !oldPhone && !receipt.customerPhone)
+            ? { ...receipt, customerName: newName, customerPhone: newPhone }
+            : receipt
+        ),
+      };
+    case 'DELETE_CUSTOMER_DATA':
+      const { customerName, customerPhone } = action.payload;
+      return {
+        ...state,
+        sales: state.sales.filter(sale =>
+          !(sale.customerName === customerName && (sale.customerPhone === customerPhone || (!customerPhone && !sale.customerPhone)))
+        ),
+        debts: state.debts.filter(debt =>
+          !(debt.customerName === customerName && debt.phone === customerPhone)
+        ),
+        receipts: state.receipts.filter(receipt =>
+          !(receipt.customerName === customerName && (receipt.customerPhone === customerPhone || (!customerPhone && !receipt.customerPhone)))
+        ),
       };
     default:
       return state;

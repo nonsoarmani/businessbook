@@ -4,7 +4,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LayoutDashboard, HandCoins, Wallet, Scale, ReceiptText, LineChart, Landmark, Settings as SettingsIcon } from 'lucide-react'; // Import SettingsIcon
+import { LayoutDashboard, HandCoins, Wallet, Scale, ReceiptText, LineChart, Landmark, Settings as SettingsIcon, Users } from 'lucide-react'; // Import Users icon
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -19,7 +19,8 @@ const navItems = [
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
   { name: 'Reports', icon: LineChart, path: '/reports' },
   { name: 'Cash Flow', icon: Landmark, path: '/cash-flow' },
-  { name: 'Settings', icon: SettingsIcon, path: '/settings' }, // Add Settings item
+  { name: 'Customers', icon: Users, path: '/customers' }, // Add Customers item
+  { name: 'Settings', icon: SettingsIcon, path: '/settings' },
 ];
 
 const Sidebar = ({ isCollapsed }: SidebarProps) => {

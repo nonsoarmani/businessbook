@@ -43,6 +43,16 @@ export interface Receipt {
   linkedSaleId?: string; // If generated from a sale
 }
 
+// Derived Customer interface for display purposes
+export interface Customer {
+  id: string; // A unique ID for the customer, derived from their name/phone
+  name: string;
+  phone: string;
+  totalSalesAmount: number;
+  totalDebtsAmount: number;
+  activeDebtsCount: number;
+}
+
 export interface BusinessState {
   sales: Sale[];
   expenses: Expense[];
@@ -65,6 +75,8 @@ export type BusinessAction =
   | { type: 'DELETE_DEBT'; payload: { id: string } }
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: Date } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
-  | { type: 'UPDATE_RECEIPT'; payload: Partial<Receipt> & { id: string } } // New action for updating receipts
+  | { type: 'UPDATE_RECEIPT'; payload: Partial<Receipt> & { id: string } }
   | { type: 'DELETE_RECEIPT'; payload: { id: string } }
-  | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } };
+  | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } }
+  | { type: 'UPDATE_CUSTOMER_DETAILS'; payload: { oldName: string; oldPhone: string; newName: string; newPhone: string } } // New action
+  | { type: 'DELETE_CUSTOMER_DATA'; payload: { customerName: string; customerPhone: string } }; // New action
