@@ -1,5 +1,5 @@
-import { Sale, Expense } from "@/types";
-import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks, format, parseISO, addDays } from 'date-fns';
+import { Sale, Expense, Debt } from "@/types";
+import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks, format, parseISO, addDays, differenceInDays } from 'date-fns';
 
 export const calculateTotalSales = (sales: Sale[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all', customStartDate?: Date, customEndDate?: Date): number => {
   const now = new Date();
@@ -128,4 +128,45 @@ export const calculatePersonalUsePercentage = (sales: Sale[], expenses: Expense[
 
   if (totalSales === 0) return 0;
   return (personalUseExpenses / totalSales) * 100;
+};
+
+export const calculateOutstandingDebts = (debts: Debt[]): { totalAmount: number; numberOfPeople: number; overdueAmount: number } => {
+  const activeDebts = debts.filter(debt => debt.status !== 'paid');
+  const totalAmount = activeDebts.reduce((sum, debt) => sum + debt.amountOwed, 0);
+  const numberOfPeople = new Set(activeDebts.map(debt => debt.customerName)).size;
+
+  const now = new Date();
+  const overdueAmount = activeDebts
+    .filter(debt => debt.dueDate < now)
+    .reduce((sum, debt) => sum + debt.amountOwed, 0);
+
+  return { totalAmount, numberOfPeople, overdueAmount };
+};
+
+export const getDebtStatus = (debt: Debt): 'overdue' | 'dueSoon' | 'notYetDue' | 'paid' => {
+  if (debt.status === 'paid') return 'paid';
+  const now = new Date();
+  const dueDate = new Date(debt.dueDate);
+  const daysUntilDue = differenceInDays(dueDate, now);
+
+  if (daysUntilDue < 0) {
+    return 'overdue';
+  } else if (daysUntilDue <= 7) {
+    return 'dueSoon';
+  } else {
+    return 'notYetDue';
+  }
+};
+
+export const calculateDaysOverdue = (dueDate: Date): number => {
+  const now = new Date();
+  const due = new Date(dueDate);
+  if (due < now) {
+    return differenceInDays(now, due);
+  }
+  return 0;
+};
+
+export const calculateDaysToCollect = (dateGiven: Date, datePaid: Date): number => {
+  return differenceInDays(new Date(datePaid), new Date(dateGiven));
 };
