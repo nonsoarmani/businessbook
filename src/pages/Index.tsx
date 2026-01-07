@@ -10,7 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import DebtReminders from "@/components/dashboard/DebtReminders";
 import WeekOverWeekSalesCard from "@/components/dashboard/WeekOverWeekSalesCard";
-import TotalOutstandingDebtsCard from "@/components/dashboard/TotalOutstandingDebtsCard"; // Import new component
+import TotalOutstandingDebtsCard from "@/components/dashboard/TotalOutstandingDebtsCard";
+import MonthlyOverviewCard from "@/components/dashboard/MonthlyOverviewCard"; // Import new component
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -100,10 +101,11 @@ const Index = () => {
 
         {/* New Dashboard Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <MonthlyOverviewCard /> {/* Add the new card here */}
+          <WeekOverWeekSalesCard />
           <RecentTransactions />
           <DebtReminders />
-          <WeekOverWeekSalesCard />
-          <TotalOutstandingDebtsCard /> {/* Add the new card here */}
+          <TotalOutstandingDebtsCard />
         </div>
       </div>
     </div>
