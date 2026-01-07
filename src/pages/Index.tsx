@@ -1,21 +1,22 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, HandCoins, Wallet, Scale, CheckCircle, Info } from "lucide-react";
+import { PlusCircle, HandCoins, Wallet, Scale, CheckCircle, Info, Landmark } from "lucide-react"; // Import Landmark icon
 import { Link } from "react-router-dom";
 import { useBusiness } from "@/state/businessStore";
 import { formatNaira } from "@/lib/utils";
-import { calculateDailySummary } from "@/lib/calculations";
+import { calculateDailySummary, calculateCurrentCashBalance } from "@/lib/calculations"; // Import calculateCurrentCashBalance
 import { Separator } from "@/components/ui/separator";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import DebtReminders from "@/components/dashboard/DebtReminders";
-import WeekOverWeekSalesCard from "@/components/dashboard/WeekOverWeekSalesCard"; // Import new component
+import WeekOverWeekSalesCard from "@/components/dashboard/WeekOverWeekSalesCard";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { state } = useBusiness();
   const today = new Date();
   const { totalSales, totalExpenses, profitLoss } = calculateDailySummary(state.sales, state.expenses, today);
+  const currentCashBalance = calculateCurrentCashBalance(state.sales, state.expenses); // Calculate current cash balance
 
   return (
     <div className="min-h-full flex flex-col">
@@ -62,12 +63,14 @@ const Index = () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Outstanding Debts</CardTitle>
-              <Scale className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Current Cash Balance</CardTitle>
+              <Landmark className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{formatNaira(state.debts.filter(d => d.status !== 'paid').reduce((sum, d) => sum + d.amountOwed, 0))}</div>
-              <p className="text-xs text-muted-foreground">Total amount owed to you</p>
+              <div className={cn("text-2xl font-bold", currentCashBalance >= 0 ? "text-green-600" : "text-red-600")}>
+                {formatNaira(currentCashBalance)}
+              </div>
+              <p className="text-xs text-muted-foreground">Cash-in minus total expenses</p>
             </CardContent>
           </Card>
         </div>
@@ -98,7 +101,7 @@ const Index = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <RecentTransactions />
           <DebtReminders />
-          <WeekOverWeekSalesCard /> {/* Add the new sales trend card here */}
+          <WeekOverWeekSalesCard />
         </div>
       </div>
     </div>
