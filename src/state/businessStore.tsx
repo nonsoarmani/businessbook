@@ -69,7 +69,14 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       };
     case 'ADD_RECEIPT':
       return { ...state, receipts: [...state.receipts, action.payload] };
-    case 'DELETE_RECEIPT': // New case for deleting receipts
+    case 'UPDATE_RECEIPT': // New case for updating receipts
+      return {
+        ...state,
+        receipts: state.receipts.map(receipt =>
+          receipt.id === action.payload.id ? { ...receipt, ...action.payload } : receipt
+        ),
+      };
+    case 'DELETE_RECEIPT':
       return {
         ...state,
         receipts: state.receipts.filter(receipt => receipt.id !== action.payload.id),
@@ -93,7 +100,7 @@ interface BusinessContextType {
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
-export const BusinessProvider = ({ children }: { children: ReactNode }) => {
+export const BusinessProvider = ({ children }: { ReactNode }) => {
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
 
   const [state, dispatch] = useReducer(businessReducer, persistedState);

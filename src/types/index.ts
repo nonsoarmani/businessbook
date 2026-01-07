@@ -65,5 +65,6 @@ export type BusinessAction =
   | { type: 'DELETE_DEBT'; payload: { id: string } }
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: Date } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
-  | { type: 'DELETE_RECEIPT'; payload: { id: string } } // New action for deleting receipts
+  | { type: 'UPDATE_RECEIPT'; payload: Partial<Receipt> & { id: string } } // New action for updating receipts
+  | { type: 'DELETE_RECEIPT'; payload: { id: string } }
   | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } };

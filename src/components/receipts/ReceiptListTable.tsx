@@ -14,14 +14,15 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { ArrowUpDown, Download, CalendarIcon, Eye, Trash2 } from 'lucide-react';
+import { ArrowUpDown, Download, CalendarIcon, Eye, Trash2, Edit } from 'lucide-react'; // Import Edit icon
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, formatDate, exportToCSV, cn } from '@/lib/utils';
 import { Receipt } from '@/types';
 import { isWithinInterval, format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ReceiptCard from './ReceiptCard';
-import DeleteReceiptDialog from './DeleteReceiptDialog'; // Import the new dialog
+import DeleteReceiptDialog from './DeleteReceiptDialog';
+import EditReceiptDialog from './EditReceiptDialog'; // Import the new dialog
 
 type SortKey = keyof Receipt | null;
 type SortDirection = 'asc' | 'desc';
@@ -34,7 +35,8 @@ const ReceiptListTable = () => {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isViewReceiptDialogOpen, setIsViewReceiptDialogOpen] = useState(false);
-  const [isDeleteReceiptDialogOpen, setIsDeleteReceiptDialogOpen] = useState(false); // State for delete dialog
+  const [isDeleteReceiptDialogOpen, setIsDeleteReceiptDialogOpen] = useState(false);
+  const [isEditReceiptDialogOpen, setIsEditReceiptDialogOpen] = useState(false); // State for edit dialog
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
 
   const filteredReceipts = useMemo(() => {
@@ -111,6 +113,11 @@ const ReceiptListTable = () => {
   const handleViewReceipt = (receipt: Receipt) => {
     setSelectedReceipt(receipt);
     setIsViewReceiptDialogOpen(true);
+  };
+
+  const handleEditReceipt = (receipt: Receipt) => {
+    setSelectedReceipt(receipt);
+    setIsEditReceiptDialogOpen(true);
   };
 
   const handleDeleteReceipt = (receipt: Receipt) => {
@@ -225,6 +232,9 @@ const ReceiptListTable = () => {
                     <Button variant="ghost" size="sm" onClick={() => handleViewReceipt(receipt)}>
                       <Eye className="h-4 w-4" />
                     </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleEditReceipt(receipt)}> {/* New Edit button */}
+                      <Edit className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDeleteReceipt(receipt)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -252,11 +262,18 @@ const ReceiptListTable = () => {
       </Dialog>
 
       {selectedReceipt && (
-        <DeleteReceiptDialog
-          receipt={selectedReceipt}
-          open={isDeleteReceiptDialogOpen}
-          onOpenChange={setIsDeleteReceiptDialogOpen}
-        />
+        <>
+          <EditReceiptDialog
+            receipt={selectedReceipt}
+            open={isEditReceiptDialogOpen}
+            onOpenChange={setIsEditReceiptDialogOpen}
+          />
+          <DeleteReceiptDialog
+            receipt={selectedReceipt}
+            open={isDeleteReceiptDialogOpen}
+            onOpenChange={setIsDeleteReceiptDialogOpen}
+          />
+        </>
       )}
     </div>
   );
