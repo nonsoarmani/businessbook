@@ -15,10 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs components
 import { useBusiness } from '@/state/businessStore';
 import { toast } from 'sonner';
 import { Customer } from '@/types';
 import { isValidNigerianPhoneNumber } from '@/lib/utils';
+import CustomerTransactionHistory from './CustomerTransactionHistory'; // Import new component
 
 const customerFormSchema = z.object({
   name: z.string().min(1, { message: 'Customer name is required.' }),
@@ -72,43 +74,55 @@ const CustomerDetailsDialog = ({ customer, open, onOpenChange }: CustomerDetails
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col"> {/* Adjusted max-w and added flex-col for tabs */}
         <DialogHeader>
-          <DialogTitle>Edit Customer Details</DialogTitle>
+          <DialogTitle>Customer Details: {customer.name}</DialogTitle>
           <DialogDescription>
-            Update the name and phone number for <span className="font-semibold">{customer.name}</span>. This will update all associated sales, debts, and receipts.
+            View and manage details for <span className="font-semibold">{customer.name}</span>.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-          <div>
-            <Label htmlFor="name">Customer Name</Label>
-            <Input
-              id="name"
-              {...form.register('name')}
-              placeholder="e.g., John Doe"
-            />
-            {form.formState.errors.name && (
-              <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>
-            )}
-          </div>
 
-          <div>
-            <Label htmlFor="phone">Phone Number (Optional)</Label>
-            <Input
-              id="phone"
-              {...form.register('phone')}
-              placeholder="e.g., 08012345678"
-            />
-            {form.formState.errors.phone && (
-              <p className="text-red-500 text-sm mt-1">{form.formState.errors.phone.message}</p>
-            )}
-          </div>
+        <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="history">Transaction History</TabsTrigger>
+          </TabsList>
+          <TabsContent value="details" className="flex-1 overflow-auto p-4 space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="name">Customer Name</Label>
+                <Input
+                  id="name"
+                  {...form.register('name')}
+                  placeholder="e.g., John Doe"
+                />
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>
+                )}
+              </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit">Save Changes</Button>
-          </DialogFooter>
-        </form>
+              <div>
+                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Input
+                  id="phone"
+                  {...form.register('phone')}
+                  placeholder="e.g., 08012345678"
+                />
+                {form.formState.errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">{form.formState.errors.phone.message}</p>
+                )}
+              </div>
+
+              <DialogFooter className="mt-6">
+                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                <Button type="submit">Save Changes</Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+          <TabsContent value="history" className="flex-1 overflow-auto p-4">
+            <CustomerTransactionHistory customer={customer} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
