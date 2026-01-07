@@ -53,7 +53,7 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
           debt.id === action.payload.id ? { ...debt, ...action.payload } : debt
         ),
       };
-    case 'DELETE_DEBT': // New case for deleting debts
+    case 'DELETE_DEBT':
       return {
         ...state,
         debts: state.debts.filter(debt => debt.id !== action.payload.id),
@@ -69,6 +69,11 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       };
     case 'ADD_RECEIPT':
       return { ...state, receipts: [...state.receipts, action.payload] };
+    case 'DELETE_RECEIPT': // New case for deleting receipts
+      return {
+        ...state,
+        receipts: state.receipts.filter(receipt => receipt.id !== action.payload.id),
+      };
     case 'SET_BUSINESS_INFO':
       return {
         ...state,

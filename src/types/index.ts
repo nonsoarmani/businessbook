@@ -62,7 +62,8 @@ export type BusinessAction =
   | { type: 'DELETE_EXPENSE'; payload: { id: string } }
   | { type: 'ADD_DEBT'; payload: Debt }
   | { type: 'UPDATE_DEBT'; payload: Partial<Debt> & { id: string } }
-  | { type: 'DELETE_DEBT'; payload: { id: string } } // New action for deleting debts
+  | { type: 'DELETE_DEBT'; payload: { id: string } }
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: Date } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
+  | { type: 'DELETE_RECEIPT'; payload: { id: string } } // New action for deleting receipts
   | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } };
