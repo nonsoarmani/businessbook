@@ -2,7 +2,8 @@ import React from 'react';
 import DailyReportCard from '@/components/reports/DailyReportCard';
 import MonthlySalesChart from '@/components/reports/MonthlySalesChart';
 import ExpenseCategoryReport from '@/components/reports/ExpenseCategoryReport';
-import TopSellingItemsReport from '@/components/reports/TopSellingItemsReport'; // Import new component
+import TopSellingItemsReport from '@/components/reports/TopSellingItemsReport';
+import ProfitLossReport from '@/components/reports/ProfitLossReport'; // Import new component
 import { Separator } from '@/components/ui/separator';
 
 const Reports = () => {
@@ -14,9 +15,11 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-8">
           <DailyReportCard />
-          <TopSellingItemsReport /> {/* Add TopSellingItemsReport here */}
+          <TopSellingItemsReport />
         </div>
         <div className="lg:col-span-2 space-y-8">
+          <ProfitLossReport /> {/* Add ProfitLossReport here */}
+          <Separator />
           <MonthlySalesChart />
           <Separator />
           <ExpenseCategoryReport />

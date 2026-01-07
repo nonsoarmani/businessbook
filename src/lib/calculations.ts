@@ -4,7 +4,7 @@ import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMont
 export const calculateTotalSales = (sales: Sale[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all', customStartDate?: Date, customEndDate?: Date): number => {
   const now = new Date();
   return sales.filter(sale => {
-    const saleDate = sale.date;
+    const saleDate = new Date(sale.date); // Ensure it's a Date object
     if (dateRange === 'today') return isSameDay(saleDate, now);
     if (dateRange === 'thisWeek') return isThisWeek(saleDate, { weekStartsOn: 1 }); // Monday as start of week
     if (dateRange === 'thisMonth') return isThisMonth(saleDate);
@@ -16,7 +16,7 @@ export const calculateTotalSales = (sales: Sale[], dateRange?: 'today' | 'thisWe
 export const calculateSalesBreakdown = (sales: Sale[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all'): Record<Sale['paymentMethod'], number> => {
   const filteredSales = sales.filter(sale => {
     const now = new Date();
-    const saleDate = sale.date;
+    const saleDate = new Date(sale.date); // Ensure it's a Date object
     if (dateRange === 'today') return isSameDay(saleDate, now);
     if (dateRange === 'thisWeek') return isThisWeek(saleDate, { weekStartsOn: 1 });
     if (dateRange === 'thisMonth') return isThisMonth(saleDate);
@@ -32,7 +32,7 @@ export const calculateSalesBreakdown = (sales: Sale[], dateRange?: 'today' | 'th
 export const calculateTotalExpenses = (expenses: Expense[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all', customStartDate?: Date, customEndDate?: Date): number => {
   const now = new Date();
   return expenses.filter(expense => {
-    const expenseDate = expense.date;
+    const expenseDate = new Date(expense.date); // Ensure it's a Date object
     if (dateRange === 'today') return isSameDay(expenseDate, now);
     if (dateRange === 'thisWeek') return isThisWeek(expenseDate, { weekStartsOn: 1 });
     if (dateRange === 'thisMonth') return isThisMonth(expenseDate);
@@ -68,7 +68,7 @@ export const calculateWeekOverWeekSalesChange = (sales: Sale[]): number => {
 
 export const calculateExpensesByCategory = (expenses: Expense[], startDate: Date, endDate: Date): Record<string, number> => {
   const filteredExpenses = expenses.filter(expense => {
-    const expenseDate = expense.date;
+    const expenseDate = new Date(expense.date); // Ensure it's a Date object
     return expenseDate >= startDate && expenseDate <= endDate;
   });
 
@@ -81,7 +81,7 @@ export const calculateExpensesByCategory = (expenses: Expense[], startDate: Date
 export const calculateWeeklyExpenses = (expenses: Expense[]): number => {
   const now = new Date();
   const sevenDaysAgo = addDays(now, -7);
-  return expenses.filter(expense => expense.date >= sevenDaysAgo && expense.date <= now)
+  return expenses.filter(expense => new Date(expense.date) >= sevenDaysAgo && new Date(expense.date) <= now) // Ensure Date objects
                  .reduce((sum, expense) => sum + expense.amount, 0);
 };
 
@@ -123,7 +123,7 @@ export const calculateWeekOverWeekExpensesChange = (expenses: Expense[]): { chan
 export const calculatePersonalUsePercentage = (sales: Sale[], expenses: Expense[], startDate: Date, endDate: Date): number => {
   const totalSales = calculateTotalSales(sales, 'all', startDate, endDate);
   const personalUseExpenses = expenses.filter(expense =>
-    expense.category === 'Personal Use' && expense.date >= startDate && expense.date <= endDate
+    expense.category === 'Personal Use' && new Date(expense.date) >= startDate && new Date(expense.date) <= endDate // Ensure Date objects
   ).reduce((sum, expense) => sum + expense.amount, 0);
 
   if (totalSales === 0) return 0;
@@ -137,7 +137,7 @@ export const calculateOutstandingDebts = (debts: Debt[]): { totalAmount: number;
 
   const now = new Date();
   const overdueAmount = activeDebts
-    .filter(debt => debt.dueDate < now)
+    .filter(debt => new Date(debt.dueDate) < now) // Ensure Date object
     .reduce((sum, debt) => sum + debt.amountOwed, 0);
 
   return { totalAmount, numberOfPeople, overdueAmount };
@@ -183,7 +183,7 @@ export const getMonthlySalesData = (sales: Sale[], numberOfMonths: number = 6) =
   }
 
   sales.forEach(sale => {
-    const saleDate = new Date(sale.date);
+    const saleDate = new Date(sale.date); // Ensure it's a Date object
     const monthYear = format(saleDate, 'MMM yyyy');
     if (monthlySales.hasOwnProperty(monthYear)) {
       monthlySales[monthYear] += sale.amount;
@@ -225,7 +225,7 @@ export const getMonthlyCashFlowData = (sales: Sale[], expenses: Expense[], numbe
   }
 
   sales.forEach(sale => {
-    const saleDate = new Date(sale.date);
+    const saleDate = new Date(sale.date); // Ensure it's a Date object
     const monthYear = format(saleDate, 'MMM yyyy');
     if (monthlyCashFlow.hasOwnProperty(monthYear) && (sale.paymentMethod === 'Cash' || sale.paymentMethod === 'Transfer' || sale.paymentMethod === 'POS')) {
       monthlyCashFlow[monthYear].sales += sale.amount;
@@ -233,7 +233,7 @@ export const getMonthlyCashFlowData = (sales: Sale[], expenses: Expense[], numbe
   });
 
   expenses.forEach(expense => {
-    const expenseDate = new Date(expense.date);
+    const expenseDate = new Date(expense.date); // Ensure it's a Date object
     const monthYear = format(expenseDate, 'MMM yyyy');
     if (monthlyCashFlow.hasOwnProperty(monthYear)) {
       monthlyCashFlow[monthYear].expenses += expense.amount;
@@ -260,7 +260,7 @@ export const getMonthlyCashFlowData = (sales: Sale[], expenses: Expense[], numbe
 
 export const calculateTopSellingItems = (sales: Sale[], startDate: Date, endDate: Date, limit: number = 5) => {
   const filteredSales = sales.filter(sale => {
-    const saleDate = new Date(sale.date);
+    const saleDate = new Date(sale.date); // Ensure it's a Date object
     return saleDate >= startDate && saleDate <= endDate;
   });
 
@@ -317,4 +317,24 @@ export const calculateAverageDebtCollectionTime = (debts: Debt[]): number => {
   if (collectedTimes.length === 0) return 0;
   const totalDays = collectedTimes.reduce((sum, days) => sum + days, 0);
   return totalDays / collectedTimes.length;
+};
+
+export const calculateProfitLossStatement = (sales: Sale[], expenses: Expense[], startDate: Date, endDate: Date) => {
+  const totalSales = sales
+    .filter(sale => {
+      const saleDate = new Date(sale.date);
+      return saleDate >= startDate && saleDate <= endDate;
+    })
+    .reduce((sum, sale) => sum + sale.amount, 0);
+
+  const totalExpenses = expenses
+    .filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate >= startDate && expenseDate <= endDate;
+    })
+    .reduce((sum, expense) => sum + expense.amount, 0);
+
+  const netProfitLoss = totalSales - totalExpenses;
+
+  return { totalSales, totalExpenses, netProfitLoss };
 };
