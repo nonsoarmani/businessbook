@@ -1,5 +1,5 @@
 import { Sale, Expense } from "@/types";
-import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks } from 'date-fns';
+import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isBefore, subWeeks, format, parseISO, addDays } from 'date-fns';
 
 export const calculateTotalSales = (sales: Sale[], dateRange?: 'today' | 'thisWeek' | 'thisMonth' | 'all', customStartDate?: Date, customEndDate?: Date): number => {
   const now = new Date();
@@ -64,4 +64,68 @@ export const calculateWeekOverWeekSalesChange = (sales: Sale[]): number => {
   }
 
   return ((thisWeekSales - lastWeekSales) / lastWeekSales) * 100;
+};
+
+export const calculateExpensesByCategory = (expenses: Expense[], startDate: Date, endDate: Date): Record<string, number> => {
+  const filteredExpenses = expenses.filter(expense => {
+    const expenseDate = expense.date;
+    return expenseDate >= startDate && expenseDate <= endDate;
+  });
+
+  return filteredExpenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+    return acc;
+  }, {});
+};
+
+export const calculateWeeklyExpenses = (expenses: Expense[]): number => {
+  const now = new Date();
+  const sevenDaysAgo = addDays(now, -7);
+  return expenses.filter(expense => expense.date >= sevenDaysAgo && expense.date <= now)
+                 .reduce((sum, expense) => sum + expense.amount, 0);
+};
+
+export const calculateWeekOverWeekExpensesChange = (expenses: Expense[]): { change: number; categoryChanges: Record<string, number> } => {
+  const now = new Date();
+  const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+  const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 });
+
+  const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+  const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
+
+  const thisWeekExpenses = calculateTotalExpenses(expenses, 'all', thisWeekStart, thisWeekEnd);
+  const lastWeekExpenses = calculateTotalExpenses(expenses, 'all', lastWeekStart, lastWeekEnd);
+
+  const change = lastWeekExpenses === 0 ? (thisWeekExpenses > 0 ? 100 : 0) : ((thisWeekExpenses - lastWeekExpenses) / lastWeekExpenses) * 100;
+
+  const thisWeekCategoryExpenses = calculateExpensesByCategory(expenses, thisWeekStart, thisWeekEnd);
+  const lastWeekCategoryExpenses = calculateExpensesByCategory(expenses, lastWeekStart, lastWeekEnd);
+
+  const categoryChanges: Record<string, number> = {};
+  for (const category in thisWeekCategoryExpenses) {
+    const thisWeekAmount = thisWeekCategoryExpenses[category];
+    const lastWeekAmount = lastWeekCategoryExpenses[category] || 0;
+    if (lastWeekAmount === 0) {
+      categoryChanges[category] = thisWeekAmount > 0 ? 100 : 0;
+    } else {
+      categoryChanges[category] = ((thisWeekAmount - lastWeekAmount) / lastWeekAmount) * 100;
+    }
+  }
+  for (const category in lastWeekCategoryExpenses) {
+    if (!(category in thisWeekCategoryExpenses)) {
+      categoryChanges[category] = -100; // Category existed last week but not this week
+    }
+  }
+
+  return { change, categoryChanges };
+};
+
+export const calculatePersonalUsePercentage = (sales: Sale[], expenses: Expense[], startDate: Date, endDate: Date): number => {
+  const totalSales = calculateTotalSales(sales, 'all', startDate, endDate);
+  const personalUseExpenses = expenses.filter(expense =>
+    expense.category === 'Personal Use' && expense.date >= startDate && expense.date <= endDate
+  ).reduce((sum, expense) => sum + expense.amount, 0);
+
+  if (totalSales === 0) return 0;
+  return (personalUseExpenses / totalSales) * 100;
 };
