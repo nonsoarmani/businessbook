@@ -12,39 +12,44 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpDown, Download, Edit, Trash2 } from 'lucide-react'; // Import Trash2 icon
+import { ArrowUpDown, Download, Edit, Trash2 } from 'lucide-react';
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, formatDate, exportToCSV } from '@/lib/utils';
 import { Sale } from '@/types';
-import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, subWeeks, startOfMonth, endOfMonth } from 'date-fns';
+import { isSameDay, isThisWeek, isThisMonth, startOfWeek, endOfWeek, subWeeks } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import EditSaleDialog from './EditSaleDialog';
-import DeleteSaleDialog from './DeleteSaleDialog'; // Import the new dialog
+import DeleteSaleDialog from './DeleteSaleDialog';
 
 type SortKey = keyof Sale | null;
 type SortDirection = 'asc' | 'desc';
+type SalesFilterType = 'all' | 'today' | 'thisWeek' | 'thisMonth';
 
-const SalesHistoryTable = () => {
+interface SalesHistoryTableProps {
+  currentFilter: SalesFilterType;
+  onFilterChange: (filter: SalesFilterType) => void;
+}
+
+const SalesHistoryTable = ({ currentFilter, onFilterChange }: SalesHistoryTableProps) => {
   const { state } = useBusiness();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'today' | 'thisWeek' | 'thisMonth'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isEditSaleDialogOpen, setIsEditSaleDialogOpen] = useState(false);
-  const [isDeleteSaleDialogOpen, setIsDeleteSaleDialogOpen] = useState(false); // State for delete dialog
+  const [isDeleteSaleDialogOpen, setIsDeleteSaleDialogOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
 
   const filteredSales = useMemo(() => {
     const now = new Date();
     let salesToFilter = state.sales;
 
-    // Apply date filter
+    // Apply date filter based on currentFilter prop
     salesToFilter = salesToFilter.filter(sale => {
       const saleDate = new Date(sale.date);
-      if (filter === 'today') return isSameDay(saleDate, now);
-      if (filter === 'thisWeek') return isThisWeek(saleDate, { weekStartsOn: 1 });
-      if (filter === 'thisMonth') return isThisMonth(saleDate);
+      if (currentFilter === 'today') return isSameDay(saleDate, now);
+      if (currentFilter === 'thisWeek') return isThisWeek(saleDate, { weekStartsOn: 1 });
+      if (currentFilter === 'thisMonth') return isThisMonth(saleDate);
       return true; // 'all'
     });
 
@@ -76,14 +81,14 @@ const SalesHistoryTable = () => {
     }
 
     return salesToFilter;
-  }, [state.sales, searchTerm, filter, sortKey, sortDirection]);
+  }, [state.sales, searchTerm, currentFilter, sortKey, sortDirection]);
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
       setSortKey(key);
-      setSortDirection('desc'); // Default to newest first for date, or asc for others
+      setSortDirection('desc');
     }
   };
 
@@ -146,7 +151,7 @@ const SalesHistoryTable = () => {
           className="max-w-sm"
         />
         <div className="flex gap-2">
-          <Select value={filter} onValueChange={(value: typeof filter) => setFilter(value)}>
+          <Select value={currentFilter} onValueChange={(value: SalesFilterType) => onFilterChange(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by date" />
             </SelectTrigger>
