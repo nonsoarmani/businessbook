@@ -1,12 +1,15 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, HandCoins, Wallet, Scale, CheckCircle, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBusiness } from "@/state/businessStore";
 import { formatNaira } from "@/lib/utils";
 import { calculateDailySummary } from "@/lib/calculations";
 import { Separator } from "@/components/ui/separator";
+import RecentTransactions from "@/components/dashboard/RecentTransactions"; // Import new component
+import DebtReminders from "@/components/dashboard/DebtReminders"; // Import new component
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { state } = useBusiness();
@@ -90,14 +93,10 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Recent Activity Feed - Placeholder */}
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold">Recent Activity</h2>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-muted-foreground">No recent activity yet. Start recording sales and expenses!</p>
-            </CardContent>
-          </Card>
+        {/* New Dashboard Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentTransactions />
+          <DebtReminders />
         </div>
       </div>
     </div>
