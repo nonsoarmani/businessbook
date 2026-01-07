@@ -1,5 +1,6 @@
 import React from 'react';
 import BusinessInfoForm from '@/components/settings/BusinessInfoForm';
+import ResetDataCard from '@/components/settings/ResetDataCard'; // Import new component
 import { Separator } from '@/components/ui/separator';
 
 const Settings = () => {
@@ -10,7 +11,7 @@ const Settings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <BusinessInfoForm />
-        {/* Future settings components can be added here */}
+        <ResetDataCard /> {/* Add the new ResetDataCard here */}
       </div>
     </div>
   );

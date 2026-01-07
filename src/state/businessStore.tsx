@@ -124,6 +124,13 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
           !(receipt.customerName === customerName && (receipt.customerPhone === customerPhone || (!customerPhone && !receipt.customerPhone)))
         ),
       };
+    case 'RESET_ALL_DATA':
+      return {
+        ...initialState, // Reset all data to initial empty arrays
+        businessName: state.businessName, // Keep business info
+        businessPhone: state.businessPhone,
+        businessLocation: state.businessLocation,
+      };
     default:
       return state;
   }
@@ -136,7 +143,7 @@ interface BusinessContextType {
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
-export const BusinessProvider = ({ children }: { ReactNode }) => {
+export const BusinessProvider = ({ children }: { children: ReactNode }) => { // Corrected type for children
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
 
   const [state, dispatch] = useReducer(businessReducer, persistedState);

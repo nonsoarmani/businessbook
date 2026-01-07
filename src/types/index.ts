@@ -78,5 +78,6 @@ export type BusinessAction =
   | { type: 'UPDATE_RECEIPT'; payload: Partial<Receipt> & { id: string } }
   | { type: 'DELETE_RECEIPT'; payload: { id: string } }
   | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } }
-  | { type: 'UPDATE_CUSTOMER_DETAILS'; payload: { oldName: string; oldPhone: string; newName: string; newPhone: string } } // New action
-  | { type: 'DELETE_CUSTOMER_DATA'; payload: { customerName: string; customerPhone: string } }; // New action
+  | { type: 'UPDATE_CUSTOMER_DETAILS'; payload: { oldName: string; oldPhone: string; newName: string; newPhone: string } }
+  | { type: 'DELETE_CUSTOMER_DATA'; payload: { customerName: string; customerPhone: string } }
+  | { type: 'RESET_ALL_DATA' }; // New action type
