@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useReducer, useContext, ReactNode } from 'react';
+import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
 import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt } from '@/types';
+import useLocalStorage from '@/hooks/useLocalStorage'; // Import the new hook
 
 const initialState: BusinessState = {
   sales: [],
@@ -59,7 +60,16 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(businessReducer, initialState);
+  // Use useLocalStorage to get and set the state
+  const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
+
+  // Initialize useReducer with the persisted state
+  const [state, dispatch] = useReducer(businessReducer, persistedState);
+
+  // Effect to update local storage whenever the state changes
+  useEffect(() => {
+    setPersistedState(state);
+  }, [state, setPersistedState]);
 
   return (
     <BusinessContext.Provider value={{ state, dispatch }}>
