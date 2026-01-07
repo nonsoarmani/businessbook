@@ -5,13 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ChevronDown, ChevronUp, Phone, MessageCircle, CheckCircle, Wallet, Scale } from 'lucide-react';
+import { ChevronDown, ChevronUp, Phone, MessageCircle, CheckCircle, Wallet, Scale, Edit } from 'lucide-react'; // Import Edit icon
 import { cn, formatNaira, formatDate } from '@/lib/utils';
 import { Debt } from '@/types';
 import { calculateDaysOverdue, getDebtStatus } from '@/lib/calculations';
 import MarkPaidDialog from './MarkPaidDialog';
 import PaidPartialDialog from './PaidPartialDialog';
 import SendReminderDialog from './SendReminderDialog';
+import EditDebtDialog from './EditDebtDialog'; // Import the new dialog
 import { toast } from 'sonner';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -28,11 +29,12 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
   const [isMarkPaidDialogOpen, setIsMarkPaidDialogOpen] = useState(false);
   const [isPaidPartialDialogOpen, setIsPaidPartialDialogOpen] = useState(false);
   const [isSendReminderDialogOpen, setIsSendReminderDialogOpen] = useState(false);
+  const [isEditDebtDialogOpen, setIsEditDebtDialogOpen] = useState(false); // State for edit dialog
   const [selectedDebt, setSelectedDebt] = useState<Debt | null>(null);
 
   const totalAmount = debts.reduce((sum, debt) => sum + debt.amountOwed, 0);
 
-  const handleAction = (debt: Debt, actionType: 'markPaid' | 'paidPartial' | 'sendReminder' | 'call') => {
+  const handleAction = (debt: Debt, actionType: 'markPaid' | 'paidPartial' | 'sendReminder' | 'call' | 'edit') => {
     setSelectedDebt(debt);
     if (actionType === 'markPaid') {
       setIsMarkPaidDialogOpen(true);
@@ -43,6 +45,8 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
     } else if (actionType === 'call') {
       window.open(`tel:${debt.phone}`, '_self');
       toast.info(`Calling ${debt.customerName} at ${debt.phone}...`);
+    } else if (actionType === 'edit') {
+      setIsEditDebtDialogOpen(true);
     }
   };
 
@@ -70,6 +74,9 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
         <Button variant="outline" size="sm" onClick={() => handleAction(debt, 'call')}>
           <Phone className="h-4 w-4 mr-1" /> Call
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => handleAction(debt, 'edit')}>
+          <Edit className="h-4 w-4" />
+        </Button>
       </TableCell>
     </TableRow>
   );
@@ -84,7 +91,7 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
                 <TableHead>Customer</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>{type === 'overdue' ? 'Status' : 'Due Date'}</TableHead>
-                <TableHead className="w-[250px]">Actions</TableHead>
+                <TableHead className="w-[300px]">Actions</TableHead> {/* Adjusted width for new button */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -122,6 +129,11 @@ const DebtListSection = ({ title, debts, type, isCollapsible = false, defaultOpe
             debt={selectedDebt}
             open={isSendReminderDialogOpen}
             onOpenChange={setIsSendReminderDialogOpen}
+          />
+          <EditDebtDialog
+            debt={selectedDebt}
+            open={isEditDebtDialogOpen}
+            onOpenChange={setIsEditDebtDialogOpen}
           />
         </>
       )}
