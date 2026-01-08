@@ -13,35 +13,61 @@ import Receipts from "./pages/Receipts";
 import Reports from "./pages/Reports";
 import CashFlow from "./pages/CashFlow";
 import Settings from "./pages/Settings";
-import Customers from "./pages/Customers"; // Import the new Customers page
+import Customers from "./pages/Customers";
+import AuthPage from "./pages/Auth"; // Import the new AuthPage
 import { BusinessProvider } from "./state/businessStore";
+import { UserProvider, useUser } from "./state/userStore"; // Import UserProvider and useUser
 
 const queryClient = new QueryClient();
+
+// A wrapper component to protect routes
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-muted-foreground">Loading user session...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    // user will be redirected to /auth by UserProvider
+    return null;
+  }
+
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BusinessProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Index />} />
-              <Route path="sales" element={<Sales />} />
-              <Route path="expenses" element={<Expenses />} />
-              <Route path="debts" element={<Debts />} />
-              <Route path="receipts" element={<Receipts />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="cash-flow" element={<CashFlow />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="customers" element={<Customers />} /> {/* Add the new customers route */}
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </BusinessProvider>
+      <BrowserRouter>
+        <UserProvider> {/* Wrap the entire app with UserProvider */}
+          <BusinessProvider>
+            <Routes>
+              <Route path="/auth" element={<AuthPage />} /> {/* Public auth route */}
+              <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}> {/* Protected routes */}
+                <Route index element={<Index />} />
+                <Route path="sales" element={<Sales />} />
+                <Route path="expenses" element={<Expenses />} />
+                <Route path="debts" element={<Debts />} />
+                <Route path="receipts" element={<Receipts />} />
+                <Route path="reports" element={<Reports />} />
+                <Route path="cash-flow" element={<CashFlow />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="customers" element={<Customers />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
+            </Routes>
+          </BusinessProvider>
+        </UserProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
