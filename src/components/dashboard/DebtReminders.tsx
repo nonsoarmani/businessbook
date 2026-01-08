@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira, cn } from '@/lib/utils';
 import { getDebtStatus, calculateDaysOverdue } from '@/lib/calculations';
-import { AlertCircle, Clock, ArrowRight } from 'lucide-react';
+import { AlertCircle, Clock, ArrowRight, CheckCircle, Info } from 'lucide-react'; // Added CheckCircle and Info
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
