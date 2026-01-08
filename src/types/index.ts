@@ -1,5 +1,6 @@
 export interface Sale {
   id: string;
+  user_id: string; // Added for Supabase RLS
   date: Date;
   item: string;
   amount: number;
@@ -11,6 +12,7 @@ export interface Sale {
 
 export interface Expense {
   id: string;
+  user_id: string; // Added for Supabase RLS
   date: Date;
   name: string;
   amount: number;
@@ -19,6 +21,7 @@ export interface Expense {
 
 export interface Debt {
   id: string;
+  user_id: string; // Added for Supabase RLS
   customerName: string;
   phone: string;
   originalAmount: number;
@@ -33,6 +36,7 @@ export interface Debt {
 
 export interface Receipt {
   id: string;
+  user_id: string; // Added for Supabase RLS
   receiptNumber: string;
   date: Date;
   customerName: string;
@@ -61,6 +65,7 @@ export interface BusinessState {
   businessName: string;
   businessPhone: string;
   businessLocation: string;
+  isDataLoaded: boolean; // New state to track if data has been loaded from Supabase
 }
 
 export type BusinessAction =
@@ -80,4 +85,6 @@ export type BusinessAction =
   | { type: 'SET_BUSINESS_INFO'; payload: { businessName: string; businessPhone: string; businessLocation: string } }
   | { type: 'UPDATE_CUSTOMER_DETAILS'; payload: { oldName: string; oldPhone: string; newName: string; newPhone: string } }
   | { type: 'DELETE_CUSTOMER_DATA'; payload: { customerName: string; customerPhone: string } }
-  | { type: 'RESET_ALL_DATA' }; // New action type
+  | { type: 'RESET_ALL_DATA' }
+  | { type: 'SET_INITIAL_DATA'; payload: BusinessState } // New action for initial data load
+  | { type: 'SET_DATA_LOADED'; payload: boolean }; // New action to set data loaded status
