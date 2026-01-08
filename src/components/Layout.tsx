@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import * as React from 'react';
 import { Outlet } from 'react-router-dom';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import Sidebar from './Sidebar';
@@ -14,7 +14,7 @@ const Layout = () => {
       <ResizablePanelGroup direction="horizontal">
         <ResizablePanel
           defaultSize={15}
-          minSize={5} {/* Changed from 4 to 5 */}
+          minSize={5}
           maxSize={20}
           collapsible={true}
           onCollapse={() => setIsCollapsed(true)}
