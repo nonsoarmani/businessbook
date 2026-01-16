@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { format, parseISO } from 'date-fns';
-import { ArrowUpDown, Search, FileText, AlertCircle } from 'lucide-react';
+import { ArrowUpDown, Search, FileText, AlertCircle, CalendarIcon } from 'lucide-react';
 import {
   Table,
   TableBody,
