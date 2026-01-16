@@ -7,10 +7,22 @@ import { calculateTotalSales, getSalesForDay } from '@/utils/salesCalculations';
 import { calculateTotalExpenses, getExpensesForDay } from '@/utils/expenseCalculations';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { PlusCircle, ShoppingCart, Wallet, Handshake } from 'lucide-react';
+import { PlusCircle, ShoppingCart, Wallet, Handshake, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { showSuccess, showError } from '@/utils/toast';
 
 const Dashboard = () => {
-  const { state } = useBusiness();
+  const { state, dispatch } = useBusiness();
   const { sales, expenses, debts } = state;
 
   const today = new Date();
@@ -26,6 +38,16 @@ const Dashboard = () => {
   const totalOutstandingDebts = useMemo(() => {
     return debts.filter(debt => debt.status !== 'paid').reduce((sum, debt) => sum + debt.amountOwed, 0);
   }, [debts]);
+
+  const handleClearAllData = () => {
+    try {
+      dispatch({ type: 'CLEAR_ALL_DATA' });
+      showSuccess('All business data has been cleared!');
+    } catch (error) {
+      console.error('Failed to clear all data:', error);
+      showError('Failed to clear all data. Please try again.');
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -71,6 +93,27 @@ const Dashboard = () => {
               <PlusCircle className="mr-2 h-4 w-4" /> Record Debt
             </Link>
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all your sales, expenses, debts, and receipts data from this application.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearAllData}>
+                  Confirm Clear
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
       {/* Recent Activity */}
