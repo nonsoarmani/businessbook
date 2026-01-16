@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Timer } from 'lucide-react';
+import { Timer } from 'lucide-react';
 import { toast } from 'sonner';
 import { useScriptConverter } from '@/state/scriptConverterStore';
 import { analyzeScript } from '@/lib/shotGenerator';
 import { generateUniqueId } from '@/lib/utils';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 // Import the new components
@@ -16,47 +15,7 @@ import ShotListDisplay from '@/components/script-converter/ShotListDisplay';
 import ExportButtons from '@/components/script-converter/ExportButtons';
 import TemplatesSection from '@/components/script-converter/TemplatesSection';
 import SavedScriptsSection from '@/components/script-converter/SavedScriptsSection';
-
-
-// --- Components for Script Converter ---
-
-const ShotTypesGuide = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const shotTypes = [
-    { name: 'Establishing Shot', description: 'Shows location/setting (wide view)' },
-    { name: 'Wide Shot', description: 'Shows full body and surroundings' },
-    { name: 'Medium Shot', description: 'Shows from waist up' },
-    { name: 'Medium Close-Up', description: 'Shows from chest up' },
-    { name: 'Close-Up', description: 'Shows face/head' },
-    { name: 'Tight Close-Up', description: 'Shows eyes/specific detail' },
-    { name: 'Over-Shoulder Shot', description: 'Camera behind one person looking at another' },
-    { name: 'Insert Shot', description: 'Close-up of object or detail' },
-    { name: 'Reaction Shot', description: 'Shows character reacting' },
-    { name: 'Cutaway', description: 'Brief shot away from the main action' },
-    { name: 'Transition Shot', description: 'Connects two scenes or moments' },
-    { name: 'POV Shot', description: 'What character sees' },
-    { name: 'Dutch Angle', description: 'Tilted camera (for dramatic/comedy effect)' },
-  ];
-
-  return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-      <CollapsibleTrigger asChild>
-        <Button variant="outline" className="w-full justify-between">
-          Shot Types Guide
-          {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-2 p-4 border rounded-md mt-2 bg-background">
-        {shotTypes.map((type, index) => (
-          <div key={index}>
-            <h4 className="font-semibold">{type.name}</h4>
-            <p className="text-sm text-muted-foreground">{type.description}</p>
-          </div>
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
-  );
-};
+import ShotTypesGuide from '@/components/script-converter/ShotTypesGuide'; // Import the new ShotTypesGuide component
 
 
 // --- Main ScriptConverterPage ---
