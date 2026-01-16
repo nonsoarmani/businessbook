@@ -4,7 +4,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LayoutDashboard, ShoppingCart, Wallet, Handshake, ReceiptText, BarChart, Banknote, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Wallet, Handshake, ReceiptText, BarChart, Banknote, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -21,6 +21,7 @@ const navItems = [
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
+  { name: 'Settings', icon: Settings, path: '/settings' }, // New settings item
 ];
 
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {

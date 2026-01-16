@@ -43,11 +43,20 @@ export interface Receipt {
   linkedSaleId?: string; // If generated from a sale
 }
 
+export interface BusinessSettings {
+  businessName: string;
+  businessEmail: string;
+  businessPhone: string;
+  businessAddress: string;
+  businessLogoUrl?: string;
+}
+
 export interface BusinessState {
   sales: Sale[];
   expenses: Expense[];
   debts: Debt[];
   receipts: Receipt[];
+  settings: BusinessSettings; // New settings field
 }
 
 export type BusinessAction =
@@ -62,4 +71,5 @@ export type BusinessAction =
   | { type: 'DELETE_DEBT'; payload: string }
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: string; paidAmount: number } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
+  | { type: 'UPDATE_SETTINGS'; payload: BusinessSettings } // New action type
   | { type: 'CLEAR_ALL_DATA' };

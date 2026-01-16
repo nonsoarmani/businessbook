@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { format, parseISO } from 'date-fns';
-import { Printer, Download, Search, FileText } from 'lucide-react';
+import { Printer, Download, Search } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -16,13 +16,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatNaira } from '@/lib/utils';
+import { cn, formatNaira, exportReceiptToPDF } from '@/lib/utils';
 import { Receipt } from '@/types';
 import { useReactToPrint } from 'react-to-print';
 
 const ReceiptDisplay = () => {
   const { state } = useBusiness();
-  const { receipts } = state;
+  const { receipts, settings } = state; // Destructure settings from state
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
@@ -41,7 +41,7 @@ const ReceiptDisplay = () => {
     return currentReceipts;
   }, [receipts, searchTerm]);
 
-  const handleDownloadPdf = useReactToPrint({
+  const handlePrint = useReactToPrint({
     content: () => receiptRef.current,
     documentTitle: selectedReceipt ? `Receipt_${selectedReceipt.receiptNumber}` : 'Receipt',
     pageStyle: `
@@ -61,6 +61,12 @@ const ReceiptDisplay = () => {
       }
     `,
   });
+
+  const handleDownloadPdf = async () => {
+    if (selectedReceipt && receiptRef.current) {
+      await exportReceiptToPDF(receiptRef.current, `Receipt_${selectedReceipt.receiptNumber}`);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -132,14 +138,22 @@ const ReceiptDisplay = () => {
               <Button variant="outline" onClick={handleDownloadPdf}>
                 <Download className="mr-2 h-4 w-4" /> Download PDF
               </Button>
+              <Button variant="outline" onClick={handlePrint}>
+                <Printer className="mr-2 h-4 w-4" /> Print
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
             <div ref={receiptRef} className="p-8 border rounded-md bg-white text-gray-900 shadow-lg print:shadow-none print:border-0 print:bg-white print:text-black">
               <div className="text-center mb-8">
-                <h2 className="text-4xl font-extrabold text-primary mb-2">BUSINESS NAME</h2> {/* Placeholder for business name */}
-                <p className="text-md text-gray-700">Your Business Address, City, State</p>
-                <p className="text-md text-gray-700">Phone: +234 800 123 4567 | Email: info@business.com</p>
+                {settings.businessLogoUrl && (
+                  <img src={settings.businessLogoUrl} alt="Business Logo" className="mx-auto h-16 mb-4" />
+                )}
+                <h2 className="text-4xl font-extrabold text-primary mb-2">{settings.businessName || 'BUSINESS NAME'}</h2>
+                <p className="text-md text-gray-700">{settings.businessAddress || 'Your Business Address, City, State'}</p>
+                <p className="text-md text-gray-700">
+                  Phone: {settings.businessPhone || '+234 800 123 4567'} | Email: {settings.businessEmail || 'info@business.com'}
+                </p>
               </div>
 
               <Separator className="my-6 border-gray-300" />

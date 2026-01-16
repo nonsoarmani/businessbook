@@ -11,6 +11,7 @@ import DebtsPage from "./pages/DebtsPage";
 import ReceiptsPage from "./pages/ReceiptsPage";
 import ReportsPage from "./pages/ReportsPage";
 import CashFlowPage from "./pages/CashFlowPage";
+import SettingsPage from "./pages/SettingsPage"; // Import the new SettingsPage
 import { BusinessProvider } from "./state/businessStore";
 
 const App = () => (
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/receipts" element={<ReceiptsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/cash-flow" element={<CashFlowPage />} />
+            <Route path="/settings" element={<SettingsPage />} /> {/* New Settings Route */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>

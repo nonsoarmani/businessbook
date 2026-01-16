@@ -1,14 +1,23 @@
 "use client";
 
 import React, { createContext, useReducer, useContext, ReactNode } from 'react';
-import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt } from '@/types';
+import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage'; // Import the useLocalStorage hook
+
+const initialSettings: BusinessSettings = {
+  businessName: 'BusinessBook',
+  businessEmail: 'info@businessbook.com',
+  businessPhone: '+234 800 123 4567',
+  businessAddress: '123 Business Street, City, State',
+  businessLogoUrl: '',
+};
 
 const initialState: BusinessState = {
   sales: [],
   expenses: [],
   debts: [],
   receipts: [],
+  settings: initialSettings, // Initialize with default settings
 };
 
 const businessReducer = (state: BusinessState, action: BusinessAction): BusinessState => {
@@ -66,6 +75,8 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       };
     case 'ADD_RECEIPT':
       return { ...state, receipts: [...state.receipts, action.payload] };
+    case 'UPDATE_SETTINGS':
+      return { ...state, settings: { ...state.settings, ...action.payload } }; // Update specific settings
     case 'CLEAR_ALL_DATA':
       return initialState;
     default:
@@ -80,7 +91,7 @@ interface BusinessContextType {
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
-export const BusinessProvider = ({ children }: { ReactNode }) => {
+export const BusinessProvider = ({ children }: { children: ReactNode }) => {
   // Use useLocalStorage to persist the state
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
   const [state, dispatch] = useReducer(businessReducer, persistedState);
