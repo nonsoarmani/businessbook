@@ -5,6 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DailySummary from '@/components/reports/DailySummary';
 import WeeklySummary from '@/components/reports/WeeklySummary';
 import MonthlySummary from '@/components/reports/MonthlySummary';
+import DebtReport from '@/components/reports/DebtReport';
+import SalesByPaymentMethodReport from '@/components/reports/SalesByPaymentMethodReport';
+import ExpensesByCategoryReport from '@/components/reports/ExpensesByCategoryReport';
 
 const ReportsPage = () => {
   return (
@@ -31,22 +34,13 @@ const ReportsPage = () => {
           <MonthlySummary />
         </TabsContent>
         <TabsContent value="debts" className="mt-6">
-          <div className="bg-card p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Debt Report</h2>
-            <p className="text-muted-foreground">Debt report coming soon...</p>
-          </div>
+          <DebtReport />
         </TabsContent>
         <TabsContent value="sales-by-payment" className="mt-6">
-          <div className="bg-card p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Sales by Payment Method Report</h2>
-            <p className="text-muted-foreground">Sales by payment method report coming soon...</p>
-          </div>
+          <SalesByPaymentMethodReport />
         </TabsContent>
         <TabsContent value="expenses-by-category" className="mt-6">
-          <div className="bg-card p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Expenses by Category Report</h2>
-            <p className="text-muted-foreground">Expenses by category report coming soon...</p>
-          </div>
+          <ExpensesByCategoryReport />
         </TabsContent>
       </Tabs>
     </div>
