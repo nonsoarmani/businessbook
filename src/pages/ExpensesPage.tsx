@@ -1,6 +1,8 @@
 "use client";
 
 import React from 'react';
+import ExpenseForm from '@/components/expenses/ExpenseForm';
+import ExpenseDisplay from '@/components/expenses/ExpenseDisplay';
 
 const ExpensesPage = () => {
   return (
@@ -10,14 +12,11 @@ const ExpensesPage = () => {
       {/* Expense Entry Form */}
       <div className="mt-6 bg-card p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Record New Expense</h2>
-        {/* Form will go here */}
-        <p>Expense form coming soon...</p>
+        <ExpenseForm />
       </div>
       {/* Expense Display */}
-      <div className="mt-8 bg-card p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Expense History</h2>
-        {/* Expense summary and table will go here */}
-        <p>Expense history and analytics coming soon...</p>
+      <div className="mt-8">
+        <ExpenseDisplay />
       </div>
     </div>
   );
