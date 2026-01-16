@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ThemeToggle } from './ThemeToggle'; // Import ThemeToggle
 
 const Layout = () => {
   const isMobile = useIsMobile();
@@ -27,9 +28,12 @@ const Layout = () => {
       {isMobile && (
         <header className="flex items-center justify-between p-4 border-b bg-background lg:hidden">
           <h1 className="font-bold text-lg text-primary">BusinessBook</h1>
-          <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-            <Menu className="h-6 w-6" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle /> {/* Add ThemeToggle here for mobile */}
+            <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
         </header>
       )}
 
@@ -52,6 +56,9 @@ const Layout = () => {
 
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 overflow-auto">
+        <header className="hidden lg:flex items-center justify-end p-4 border-b bg-background">
+          <ThemeToggle /> {/* Add ThemeToggle here for desktop */}
+        </header>
         <main className="flex-1 p-4 md:p-6 lg:p-8">
           <Outlet />
         </main>
