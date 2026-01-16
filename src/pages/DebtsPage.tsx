@@ -1,6 +1,8 @@
 "use client";
 
 import React from 'react';
+import DebtForm from '@/components/debts/DebtForm';
+import DebtDisplay from '@/components/debts/DebtDisplay';
 
 const DebtsPage = () => {
   return (
@@ -10,14 +12,11 @@ const DebtsPage = () => {
       {/* Debt Entry Form */}
       <div className="mt-6 bg-card p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Record New Debt</h2>
-        {/* Form will go here */}
-        <p>Debt form coming soon...</p>
+        <DebtForm />
       </div>
-      {/* Debt Dashboard */}
-      <div className="mt-8 bg-card p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Debt Overview</h2>
-        {/* Debt sections (Overdue, Due Soon, Not Yet Due) will go here */}
-        <p>Debt dashboard coming soon...</p>
+      {/* Debt Display */}
+      <div className="mt-8">
+        <DebtDisplay />
       </div>
     </div>
   );
