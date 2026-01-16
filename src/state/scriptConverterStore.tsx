@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
-import { ScriptConverterState, ScriptConverterAction, SavedScript } from '@/types';
+import { ScriptConverterState, ScriptConverterAction, SavedScript, Template } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { generateUniqueId } from '@/lib/utils';
 
@@ -9,6 +9,7 @@ const initialState: ScriptConverterState = {
   scriptInput: '',
   generatedShots: [],
   savedScripts: [],
+  userTemplates: [], // Initialize userTemplates
   isLoading: false,
 };
 
@@ -38,8 +39,24 @@ const scriptConverterReducer = (state: ScriptConverterState, action: ScriptConve
       };
     case 'SET_SAVED_SCRIPTS':
       return { ...state, savedScripts: action.payload };
+    case 'ADD_TEMPLATE':
+      return { ...state, userTemplates: [...state.userTemplates, action.payload] };
+    case 'UPDATE_TEMPLATE':
+      return {
+        ...state,
+        userTemplates: state.userTemplates.map(template =>
+          template.id === action.payload.id ? action.payload : template
+        ),
+      };
+    case 'DELETE_TEMPLATE':
+      return {
+        ...state,
+        userTemplates: state.userTemplates.filter(template => template.id !== action.payload),
+      };
+    case 'SET_USER_TEMPLATES':
+      return { ...state, userTemplates: action.payload };
     case 'CLEAR_ALL_DATA':
-      return { ...initialState, savedScripts: [] }; // Keep saved scripts if desired, or clear them too
+      return { ...initialState, savedScripts: [], userTemplates: [] }; // Clear saved scripts and user templates
     default:
       return state;
   }
@@ -52,17 +69,25 @@ interface ScriptConverterContextType {
 
 const ScriptConverterContext = createContext<ScriptConverterContextType | undefined>(undefined);
 
-export const ScriptConverterProvider = ({ children }: { children: ReactNode }) => {
+export const ScriptConverterProvider = ({ children }: { ReactNode }) => {
   const [storedSavedScripts, setStoredSavedScripts] = useLocalStorage<SavedScript[]>('savedScripts', []);
+  const [storedUserTemplates, setStoredUserTemplates] = useLocalStorage<Template[]>('userTemplates', []); // New: Local storage for user templates
+
   const [state, dispatch] = useReducer(scriptConverterReducer, {
     ...initialState,
     savedScripts: storedSavedScripts,
+    userTemplates: storedUserTemplates, // Load user templates from local storage
   });
 
   // Sync saved scripts to local storage whenever they change in state
   useEffect(() => {
     setStoredSavedScripts(state.savedScripts);
   }, [state.savedScripts, setStoredSavedScripts]);
+
+  // New: Sync user templates to local storage whenever they change in state
+  useEffect(() => {
+    setStoredUserTemplates(state.userTemplates);
+  }, [state.userTemplates, setStoredUserTemplates]);
 
   return (
     <ScriptConverterContext.Provider value={{ state, dispatch }}>
