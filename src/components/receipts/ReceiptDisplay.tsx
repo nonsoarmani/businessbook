@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatNaira, exportToTXT } from '@/lib/utils';
+import { cn, formatNaira } from '@/lib/utils';
 import { Receipt } from '@/types';
 import { useReactToPrint } from 'react-to-print';
 
@@ -41,7 +41,7 @@ const ReceiptDisplay = () => {
     return currentReceipts;
   }, [receipts, searchTerm]);
 
-  const handlePrint = useReactToPrint({
+  const handleDownloadPdf = useReactToPrint({
     content: () => receiptRef.current,
     documentTitle: selectedReceipt ? `Receipt_${selectedReceipt.receiptNumber}` : 'Receipt',
     pageStyle: `
@@ -61,32 +61,6 @@ const ReceiptDisplay = () => {
       }
     `,
   });
-
-  const handleDownloadTxt = () => {
-    if (selectedReceipt) {
-      const receiptContent = `
-        --- OFFICIAL RECEIPT ---
-        Business Name
-        Your Business Address, City, State
-        Phone: +234 800 123 4567 | Email: info@business.com
-        ------------------------
-        Receipt Number: ${selectedReceipt.receiptNumber}
-        Date: ${format(parseISO(selectedReceipt.date), 'dd/MM/yyyy')}
-        Customer Name: ${selectedReceipt.customerName}
-        Customer Phone: ${selectedReceipt.customerPhone || 'N/A'}
-        ------------------------
-        Items/Services:
-        ${selectedReceipt.items}
-        ------------------------
-        Amount: ${formatNaira(selectedReceipt.amount)}
-        Payment Method: ${selectedReceipt.paymentMethod}
-        ------------------------
-        Thank you for your business!
-        ---
-      `;
-      exportToTXT(`Receipt_${selectedReceipt.receiptNumber}`, receiptContent);
-    }
-  };
 
   return (
     <div className="space-y-8">
@@ -155,11 +129,8 @@ const ReceiptDisplay = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-2xl font-bold">Receipt #{selectedReceipt.receiptNumber}</CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" /> Print / Download PDF
-              </Button>
-              <Button variant="outline" onClick={handleDownloadTxt}>
-                <Download className="mr-2 h-4 w-4" /> Download TXT
+              <Button variant="outline" onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" /> Download PDF
               </Button>
             </div>
           </CardHeader>
