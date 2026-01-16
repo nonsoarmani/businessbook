@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Eraser, Play, Copy, Download, Printer, ChevronDown, ChevronUp, Save, Trash2 } from 'lucide-react';
+import { Loader2, Eraser, Play, Copy, Download, Printer, ChevronDown, ChevronUp, Save, Trash2, Timer } from 'lucide-react'; // Added Timer icon
 import { toast } from 'sonner';
 import { useScriptConverter } from '@/state/scriptConverterStore';
 import { analyzeScript } from '@/lib/shotGenerator';
@@ -452,6 +452,13 @@ const ScriptConverterPage = () => {
     handleGenerateShots(script);
   };
 
+  // Calculate estimated filming time
+  const estimatedFilmingTimeMinutes = state.generatedShots.length * 0.25; // 15 seconds per shot
+  const estimatedFilmingTimeDisplay = estimatedFilmingTimeMinutes < 1
+    ? `${Math.round(estimatedFilmingTimeMinutes * 60)} seconds`
+    : `${estimatedFilmingTimeMinutes.toFixed(1)} minutes`;
+
+
   return (
     <div className="min-h-full flex flex-col p-4 space-y-6">
       <div className="text-center">
@@ -488,6 +495,15 @@ const ScriptConverterPage = () => {
             <CardContent className="flex-1 overflow-auto">
               <ShotListDisplay shots={state.generatedShots} isLoading={state.isLoading} />
             </CardContent>
+            {state.generatedShots.length > 0 && (
+              <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Timer className="h-4 w-4" />
+                  <span>Estimated Filming Time:</span>
+                </div>
+                <span className="font-semibold text-foreground">{estimatedFilmingTimeDisplay}</span>
+              </div>
+            )}
           </Card>
 
           {state.generatedShots.length > 0 && (
