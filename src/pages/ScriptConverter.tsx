@@ -15,7 +15,8 @@ import ShotListDisplay from '@/components/script-converter/ShotListDisplay';
 import ExportButtons from '@/components/script-converter/ExportButtons';
 import TemplatesSection from '@/components/script-converter/TemplatesSection';
 import SavedScriptsSection from '@/components/script-converter/SavedScriptsSection';
-import ShotTypesGuide from '@/components/script-converter/ShotTypesGuide'; // Import the new ShotTypesGuide component
+import ShotTypesGuide from '@/components/script-converter/ShotTypesGuide';
+import UserTemplatesSection from '@/components/script-converter/UserTemplatesSection'; // Import the new UserTemplatesSection
 
 
 // --- Main ScriptConverterPage ---
@@ -63,7 +64,6 @@ const ScriptConverterPage = () => {
 
   const handleLoadTemplate = (script: string) => {
     dispatch({ type: 'SET_SCRIPT_INPUT', payload: script });
-    // The templates array is now internal to TemplatesSection, so we can't directly access its names here.
     // For simplicity, we'll just set a generic title or leave it empty.
     setScriptTitle(`Template Loaded (${new Date().toLocaleTimeString()})`);
     handleGenerateShots(script);
@@ -100,6 +100,7 @@ const ScriptConverterPage = () => {
             isLoading={state.isLoading}
           />
           <TemplatesSection onLoadTemplate={handleLoadTemplate} />
+          <UserTemplatesSection onLoadTemplate={handleLoadTemplate} /> {/* New: User Templates Section */}
           <SavedScriptsSection onLoadScript={handleLoadSavedScript} />
         </div>
 

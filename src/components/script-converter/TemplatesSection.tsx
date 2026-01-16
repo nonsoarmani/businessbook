@@ -57,7 +57,7 @@ const TemplatesSection = ({ onLoadTemplate }: TemplatesSectionProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">Templates</CardTitle>
+        <CardTitle className="text-xl">Pre-built Templates</CardTitle>
         <CardDescription>Load pre-built scripts to get started quickly.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-2">
