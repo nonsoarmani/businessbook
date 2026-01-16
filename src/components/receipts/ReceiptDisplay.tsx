@@ -44,12 +44,32 @@ const ReceiptDisplay = () => {
   const handlePrint = useReactToPrint({
     content: () => receiptRef.current,
     documentTitle: selectedReceipt ? `Receipt_${selectedReceipt.receiptNumber}` : 'Receipt',
+    pageStyle: `
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+      body {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    `,
   });
 
-  const handleDownload = () => {
+  const handleDownloadTxt = () => {
     if (selectedReceipt) {
       const receiptContent = `
         --- OFFICIAL RECEIPT ---
+        Business Name
+        Your Business Address, City, State
+        Phone: +234 800 123 4567 | Email: info@business.com
+        ------------------------
         Receipt Number: ${selectedReceipt.receiptNumber}
         Date: ${format(parseISO(selectedReceipt.date), 'dd/MM/yyyy')}
         Customer Name: ${selectedReceipt.customerName}
@@ -131,70 +151,71 @@ const ReceiptDisplay = () => {
 
       {/* Selected Receipt Display */}
       {selectedReceipt && (
-        <Card>
+        <Card className="no-print"> {/* Add no-print class to hide this card when printing */}
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-2xl font-bold">Receipt #{selectedReceipt.receiptNumber}</CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" /> Print
+                <Printer className="mr-2 h-4 w-4" /> Print / Download PDF
               </Button>
-              <Button variant="outline" onClick={handleDownload}>
+              <Button variant="outline" onClick={handleDownloadTxt}>
                 <Download className="mr-2 h-4 w-4" /> Download TXT
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <div ref={receiptRef} className="p-6 border rounded-md bg-white text-gray-900 print:shadow-none print:border-0">
-              <div className="text-center mb-6">
-                <h2 className="text-3xl font-bold mb-2">BUSINESS NAME</h2> {/* Placeholder for business name */}
-                <p className="text-sm text-gray-600">Your Business Address, City, State</p>
-                <p className="text-sm text-gray-600">Phone: +234 800 123 4567 | Email: info@business.com</p>
+            <div ref={receiptRef} className="p-8 border rounded-md bg-white text-gray-900 shadow-lg print:shadow-none print:border-0 print:bg-white print:text-black">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-extrabold text-primary mb-2">BUSINESS NAME</h2> {/* Placeholder for business name */}
+                <p className="text-md text-gray-700">Your Business Address, City, State</p>
+                <p className="text-md text-gray-700">Phone: +234 800 123 4567 | Email: info@business.com</p>
               </div>
 
-              <Separator className="my-4" />
+              <Separator className="my-6 border-gray-300" />
 
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
                 <div>
-                  <p className="text-sm font-semibold">Receipt No:</p>
-                  <p className="text-lg font-bold">{selectedReceipt.receiptNumber}</p>
+                  <p className="text-sm font-semibold text-gray-600">Receipt Number:</p>
+                  <p className="text-xl font-bold text-gray-900">{selectedReceipt.receiptNumber}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold">Date:</p>
-                  <p className="text-lg font-bold">{format(parseISO(selectedReceipt.date), 'dd/MM/yyyy')}</p>
+                <div className="text-left md:text-right">
+                  <p className="text-sm font-semibold text-gray-600">Date:</p>
+                  <p className="text-xl font-bold text-gray-900">{format(parseISO(selectedReceipt.date), 'dd/MM/yyyy')}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="text-sm font-semibold text-gray-600">Bill To:</p>
+                  <p className="text-lg font-medium text-gray-900">{selectedReceipt.customerName}</p>
+                  {selectedReceipt.customerPhone && (
+                    <p className="text-base text-gray-700">Phone: {selectedReceipt.customerPhone}</p>
+                  )}
                 </div>
               </div>
 
-              <div className="mb-6">
-                <p className="text-sm font-semibold">Customer Name:</p>
-                <p className="text-base">{selectedReceipt.customerName}</p>
-                {selectedReceipt.customerPhone && (
-                  <>
-                    <p className="text-sm font-semibold mt-2">Customer Phone:</p>
-                    <p className="text-base">{selectedReceipt.customerPhone}</p>
-                  </>
-                )}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 border-b pb-2">Items/Services:</h3>
+                <div className="prose prose-sm max-w-none text-gray-800">
+                  <p className="whitespace-pre-wrap leading-relaxed">{selectedReceipt.items}</p>
+                </div>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-2">Items/Services:</h3>
-                <p className="whitespace-pre-wrap">{selectedReceipt.items}</p>
+              <Separator className="my-6 border-gray-300" />
+
+              <div className="flex flex-col items-end space-y-4 mb-8">
+                <div className="flex justify-between w-full max-w-xs">
+                  <p className="text-xl font-semibold text-gray-800">Total Amount:</p>
+                  <p className="text-3xl font-bold text-primary">{formatNaira(selectedReceipt.amount)}</p>
+                </div>
+                <div className="flex justify-between w-full max-w-xs">
+                  <p className="text-base font-semibold text-gray-700">Payment Method:</p>
+                  <p className="text-lg font-medium text-gray-800">{selectedReceipt.paymentMethod}</p>
+                </div>
               </div>
 
-              <Separator className="my-4" />
-
-              <div className="flex justify-between items-center mb-6">
-                <p className="text-xl font-semibold">Total Amount:</p>
-                <p className="text-3xl font-bold text-primary">{formatNaira(selectedReceipt.amount)}</p>
-              </div>
-
-              <div className="text-right mb-6">
-                <p className="text-sm font-semibold">Payment Method:</p>
-                <p className="text-base">{selectedReceipt.paymentMethod}</p>
-              </div>
+              <Separator className="my-6 border-gray-300" />
 
               <div className="text-center text-sm text-gray-600 mt-8">
                 <p>Thank you for your business!</p>
-                <p>Please come again.</p>
+                <p>We appreciate your patronage.</p>
               </div>
             </div>
           </CardContent>
