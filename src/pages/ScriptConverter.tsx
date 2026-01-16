@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Eraser, Play, Copy, Download, Printer, ChevronDown, ChevronUp, Save, Trash2, Timer } from 'lucide-react'; // Added Timer icon
+import { Loader2, Eraser, Play, Copy, Download, Printer, ChevronDown, ChevronUp, Save, Trash2, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 import { useScriptConverter } from '@/state/scriptConverterStore';
 import { analyzeScript } from '@/lib/shotGenerator';
@@ -26,112 +26,120 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+// Import the new components
+import ScriptInput from '@/components/script-converter/ScriptInput';
+import ShotListDisplay from '@/components/script-converter/ShotListDisplay';
+import ExportButtons from '@/components/script-converter/ExportButtons';
+
+
 // --- Components for Script Converter ---
 
-interface ScriptInputProps {
-  script: string;
-  onScriptChange: (script: string) => void;
-  onGenerate: (script: string) => void;
-  onClear: () => void;
-  isLoading: boolean;
-}
+// Moved to src/components/script-converter/ScriptInput.tsx
+// interface ScriptInputProps {
+//   script: string;
+//   onScriptChange: (script: string) => void;
+//   onGenerate: (script: string) => void;
+//   onClear: () => void;
+//   isLoading: boolean;
+// }
 
-const scriptInputSchema = z.object({
-  script: z.string()
-    .min(10, { message: "Script too short - try adding more detail." })
-    .max(5000, { message: "Script is too long (max 5000 characters)." }),
-});
+// const scriptInputSchema = z.object({
+//   script: z.string()
+//     .min(10, { message: "Script too short - try adding more detail." })
+//     .max(5000, { message: "Script is too long (max 5000 characters)." }),
+// });
 
-const ScriptInput = ({ script, onScriptChange, onGenerate, onClear, isLoading }: ScriptInputProps) => {
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
-    resolver: zodResolver(scriptInputSchema),
-    defaultValues: { script: script },
-  });
+// const ScriptInput = ({ script, onScriptChange, onGenerate, onClear, isLoading }: ScriptInputProps) => {
+//   const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+//     resolver: zodResolver(scriptInputSchema),
+//     defaultValues: { script: script },
+//   });
 
-  useEffect(() => {
-    setValue('script', script);
-  }, [script, setValue]);
+//   useEffect(() => {
+//     setValue('script', script);
+//   }, [script, setValue]);
 
-  const onSubmit = (data: { script: string }) => {
-    onGenerate(data.script);
-  };
+//   const onSubmit = (data: { script: string }) => {
+//     onGenerate(data.script);
+//   };
 
-  return (
-    <Card className="h-full flex flex-col">
-      <CardHeader>
-        <CardTitle className="text-xl">Script Input</CardTitle>
-        <CardDescription>Paste or type your script here. Max 5000 characters.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col">
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col space-y-4">
-          <div className="flex-1 relative">
-            <Textarea
-              {...register('script')}
-              placeholder={`[SCENE: Kitchen]\nPERSON A: "Did you eat my leftovers?"\nPERSON B: (nervously) "No..."\n[Person A opens fridge, it's empty]\nPERSON A: "BRUH."`}
-              className="min-h-[200px] h-full resize-none"
-              value={script}
-              onChange={(e) => onScriptChange(e.target.value)}
-            />
-            <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
-              {script.length} / 5000
-            </div>
-          </div>
-          {errors.script && (
-            <p className="text-red-500 text-sm mt-1">{errors.script.message}</p>
-          )}
-          <div className="flex gap-2 mt-4">
-            <Button type="submit" className="flex-1" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Generate Shot List
-            </Button>
-            <Button type="button" variant="outline" onClick={onClear} disabled={isLoading}>
-              <Eraser className="mr-2 h-4 w-4" /> Clear
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
-};
+//   return (
+//     <Card className="h-full flex flex-col">
+//       <CardHeader>
+//         <CardTitle className="text-xl">Script Input</CardTitle>
+//         <CardDescription>Paste or type your script here. Max 5000 characters.</CardDescription>
+//       </CardHeader>
+//       <CardContent className="flex-1 flex flex-col">
+//         <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col space-y-4">
+//           <div className="flex-1 relative">
+//             <Textarea
+//               {...register('script')}
+//               placeholder={`[SCENE: Kitchen]\nPERSON A: "Did you eat my leftovers?"\nPERSON B: (nervously) "No..."\n[Person A opens fridge, it's empty]\nPERSON A: "BRUH."`}
+//               className="min-h-[200px] h-full resize-none"
+//               value={script}
+//               onChange={(e) => onScriptChange(e.target.value)}
+//             />
+//             <div className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+//               {script.length} / 5000
+//             </div>
+//           </div>
+//           {errors.script && (
+//             <p className="text-red-500 text-sm mt-1">{errors.script.message}</p>
+//           )}
+//           <div className="flex gap-2 mt-4">
+//             <Button type="submit" className="flex-1" disabled={isLoading}>
+//               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+//               Generate Shot List
+//             </Button>
+//             <Button type="button" variant="outline" onClick={onClear} disabled={isLoading}>
+//               <Eraser className="mr-2 h-4 w-4" /> Clear
+//             </Button>
+//           </div>
+//         </form>
+//       </CardContent>
+//     </Card>
+//   );
+// };
 
-interface ShotListDisplayProps {
-  shots: { number: number; type: string; description: string }[];
-  isLoading: boolean;
-}
+// Moved to src/components/script-converter/ShotListDisplay.tsx
+// interface ShotListDisplayProps {
+//   shots: { number: number; type: string; description: string }[];
+//   isLoading: boolean;
+// }
 
-const ShotListDisplay = ({ shots, isLoading }: ShotListDisplayProps) => {
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-        <Loader2 className="h-8 w-8 animate-spin mb-2" />
-        <p>Generating shots...</p>
-      </div>
-    );
-  }
+// const ShotListDisplay = ({ shots, isLoading }: ShotListDisplayProps) => {
+//   if (isLoading) {
+//     return (
+//       <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+//         <Loader2 className="h-8 w-8 animate-spin mb-2" />
+//         <p>Generating shots...</p>
+//       </div>
+//     );
+//   }
 
-  if (shots.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-        <Play className="h-12 w-12 mb-4" />
-        <p className="text-lg font-semibold">No shots generated yet.</p>
-        <p className="text-sm">Enter your script and click "Generate Shot List".</p>
-      </div>
-    );
-  }
+//   if (shots.length === 0) {
+//     return (
+//       <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+//         <Play className="h-12 w-12 mb-4" />
+//         <p className="text-lg font-semibold">No shots generated yet.</p>
+//         <p className="text-sm">Enter your script and click "Generate Shot List".</p>
+//       </div>
+//     );
+//   }
 
-  return (
-    <div className="space-y-2">
-      {shots.map((shot) => (
-        <div key={shot.number} className="flex items-start gap-2 p-2 rounded-md bg-muted/50">
-          <span className="font-bold text-primary w-6 flex-shrink-0">{shot.number}.</span>
-          <div>
-            <span className="font-semibold">{shot.type}</span> - <span className="text-muted-foreground">{shot.description}</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
+//   return (
+//     <div className="space-y-2">
+//       {shots.map((shot) => (
+//         <div key={shot.number} className="flex items-start gap-2 p-2 rounded-md bg-muted/50">
+//           <span className="font-bold text-primary w-6 flex-shrink-0">{shot.number}.</span>
+//           <div>
+//             <span className="font-semibold">{shot.type}</span> - <span className="text-muted-foreground">{shot.description}</span>
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   );
+// };
 
 const ShotTypesGuide = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -171,72 +179,73 @@ const ShotTypesGuide = () => {
   );
 };
 
-interface ExportButtonsProps {
-  shots: { number: number; type: string; description: string }[];
-  scriptTitle: string;
-}
+// Moved to src/components/script-converter/ExportButtons.tsx
+// interface ExportButtonsProps {
+//   shots: { number: number; type: string; description: string }[];
+//   scriptTitle: string;
+// }
 
-const ExportButtons = ({ shots, scriptTitle }: ExportButtonsProps) => {
-  const formatShotList = () => {
-    return shots.map(shot => `${shot.number}. ${shot.type} - ${shot.description}`).join('\n');
-  };
+// const ExportButtons = ({ shots, scriptTitle }: ExportButtonsProps) => {
+//   const formatShotList = () => {
+//     return shots.map(shot => `${shot.number}. ${shot.type} - ${shot.description}`).join('\n');
+//   };
 
-  const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(formatShotList());
-    toast.success('Shot list copied to clipboard!');
-  };
+//   const handleCopyToClipboard = () => {
+//     navigator.clipboard.writeText(formatShotList());
+//     toast.success('Shot list copied to clipboard!');
+//   };
 
-  const handleDownloadTXT = () => {
-    const filename = scriptTitle ? `ShotList_${scriptTitle.replace(/\s/g, '_')}` : 'ShotList';
-    exportToTXT(filename, formatShotList());
-    toast.success('Shot list downloaded as TXT!');
-  };
+//   const handleDownloadTXT = () => {
+//     const filename = scriptTitle ? `ShotList_${scriptTitle.replace(/\s/g, '_')}` : 'ShotList';
+//     exportToTXT(filename, formatShotList());
+//     toast.success('Shot list downloaded as TXT!');
+//   };
 
-  const handlePrint = () => {
-    const printContent = `
-      <style>
-        body { font-family: sans-serif; margin: 20px; }
-        h1 { text-align: center; margin-bottom: 20px; }
-        .shot-item { margin-bottom: 10px; }
-        .shot-number { font-weight: bold; margin-right: 5px; }
-        .shot-type { font-weight: bold; }
-        .footer { text-align: center; margin-top: 40px; font-size: 0.8em; color: #666; }
-      </style>
-      <h1>Shot List for "${scriptTitle || 'Untitled Script'}"</h1>
-      ${shots.map(shot => `
-        <div class="shot-item">
-          <span class="shot-number">${shot.number}.</span>
-          <span class="shot-type">${shot.type}</span> - <span>${shot.description}</span>
-        </div>
-      `).join('')}
-      <div class="footer">Generated on ${new Date().toLocaleDateString()} with ShotList Pro</div>
-    `;
+//   const handlePrint = () => {
+//     const printContent = `
+//       <style>
+//         body { font-family: sans-serif; margin: 20px; }
+//         h1 { text-align: center; margin-bottom: 20px; }
+//         .shot-item { margin-bottom: 10px; }
+//         .shot-number { font-weight: bold; margin-right: 5px; }
+//         .shot-type { font-weight: bold; }
+//         .footer { text-align: center; margin-top: 40px; font-size: 0.8em; color: #666; }
+//       </style>
+//       <h1>Shot List for "${scriptTitle || 'Untitled Script'}"</h1>
+//       ${shots.map(shot => `
+//         <div class="shot-item">
+//           <span class="shot-number">${shot.number}.</span>
+//           <span class="shot-type">${shot.type}</span> - <span>${shot.description}</span>
+//         </div>
+//       `).join('')}
+//       <div class="footer">Generated on ${new Date().toLocaleDateString()} with ShotList Pro</div>
+//     `;
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
-      printWindow.close();
-    } else {
-      toast.error('Could not open print window. Please allow pop-ups.');
-    }
-  };
+//     const printWindow = window.open('', '_blank');
+//     if (printWindow) {
+//       printWindow.document.write(printContent);
+//       printWindow.document.close();
+//       printWindow.print();
+//       printWindow.close();
+//     } else {
+//       toast.error('Could not open print window. Please allow pop-ups.');
+//     }
+//   };
 
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button onClick={handleCopyToClipboard} variant="outline" className="flex-1 min-w-[120px]">
-        <Copy className="mr-2 h-4 w-4" /> Copy
-      </Button>
-      <Button onClick={handleDownloadTXT} variant="outline" className="flex-1 min-w-[120px]">
-        <Download className="mr-2 h-4 w-4" /> Download TXT
-      </Button>
-      <Button onClick={handlePrint} variant="outline" className="flex-1 min-w-[120px]">
-        <Printer className="mr-2 h-4 w-4" /> Print / PDF
-      </Button>
-    </div>
-  );
-};
+//   return (
+//     <div className="flex flex-wrap gap-2">
+//       <Button onClick={handleCopyToClipboard} variant="outline" className="flex-1 min-w-[120px]">
+//         <Copy className="mr-2 h-4 w-4" /> Copy
+//       </Button>
+//       <Button onClick={handleDownloadTXT} variant="outline" className="flex-1 min-w-[120px]">
+//         <Download className="mr-2 h-4 w-4" /> Download TXT
+//       </Button>
+//       <Button onClick={handlePrint} variant="outline" className="flex-1 min-w-[120px]">
+//         <Printer className="mr-2 h-4 w-4" /> Print / PDF
+//       </Button>
+//     </div>
+//   );
+// };
 
 interface TemplatesSectionProps {
   onLoadTemplate: (script: string) => void;
