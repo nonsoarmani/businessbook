@@ -2,6 +2,7 @@
 
 import React from 'react';
 import SaleForm from '@/components/sales/SaleForm';
+import SalesDisplay from '@/components/sales/SalesDisplay'; // Import the new component
 
 const SalesPage = () => {
   return (
@@ -14,10 +15,8 @@ const SalesPage = () => {
         <SaleForm />
       </div>
       {/* Sales Display */}
-      <div className="mt-8 bg-card p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Sales History</h2>
-        {/* Sales summary and table will go here */}
-        <p className="text-muted-foreground">Sales history coming soon...</p>
+      <div className="mt-8">
+        <SalesDisplay />
       </div>
     </div>
   );
