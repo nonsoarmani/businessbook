@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import SaleForm from '@/components/sales/SaleForm';
 
 const SalesPage = () => {
   return (
@@ -10,14 +11,13 @@ const SalesPage = () => {
       {/* Sales Entry Form */}
       <div className="mt-6 bg-card p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Record New Sale</h2>
-        {/* Form will go here */}
-        <p>Sales form coming soon...</p>
+        <SaleForm />
       </div>
       {/* Sales Display */}
       <div className="mt-8 bg-card p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Sales History</h2>
         {/* Sales summary and table will go here */}
-        <p>Sales history coming soon...</p>
+        <p className="text-muted-foreground">Sales history coming soon...</p>
       </div>
     </div>
   );
