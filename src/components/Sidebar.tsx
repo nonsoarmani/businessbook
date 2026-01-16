@@ -4,29 +4,18 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LayoutDashboard, HandCoins, Wallet, Scale, ReceiptText, LineChart, Landmark, Settings as SettingsIcon, Users, LogOut } from 'lucide-react'; // Import LogOut icon
+import { LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUser } from '@/state/userStore'; // Import useUser hook
 
 interface SidebarProps {
   isCollapsed: boolean;
 }
 
 const navItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { name: 'Sales', icon: HandCoins, path: '/sales' },
-  { name: 'Expenses', icon: Wallet, path: '/expenses' },
-  { name: 'Debts', icon: Scale, path: '/debts' },
-  { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
-  { name: 'Reports', icon: LineChart, path: '/reports' },
-  { name: 'Cash Flow', icon: Landmark, path: '/cash-flow' },
-  { name: 'Customers', icon: Users, path: '/customers' },
-  { name: 'Settings', icon: SettingsIcon, path: '/settings' },
+  { name: 'Script Converter', icon: LayoutDashboard, path: '/' },
 ];
 
 const Sidebar = ({ isCollapsed }: SidebarProps) => {
-  const { signOut } = useUser();
-
   return (
     <div className={cn(
       "flex h-full flex-col border-r bg-sidebar transition-all duration-300",
@@ -37,7 +26,7 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
           "font-bold text-lg text-sidebar-primary transition-opacity duration-300",
           isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
         )}>
-          BusinessBook
+          ShotList Pro
         </h1>
         <LayoutDashboard className={cn(
           "text-sidebar-primary transition-opacity duration-300",
@@ -69,23 +58,8 @@ const Sidebar = ({ isCollapsed }: SidebarProps) => {
           ))}
         </nav>
       </ScrollArea>
-      <div className="mt-auto p-2 border-t">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            isCollapsed && "justify-center"
-          )}
-          onClick={signOut}
-        >
-          <LogOut className="h-5 w-5" />
-          <span className={cn(
-            "transition-opacity duration-300",
-            isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-          )}>
-            Sign Out
-          </span>
-        </Button>
+      <div className="mt-auto p-2 border-t text-center text-xs text-muted-foreground">
+        <p className={cn(isCollapsed ? "hidden" : "block")}>Built for creators</p>
       </div>
     </div>
   );
