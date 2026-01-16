@@ -1,6 +1,8 @@
 "use client";
 
 import React from 'react';
+import ReceiptForm from '@/components/receipts/ReceiptForm';
+import ReceiptDisplay from '@/components/receipts/ReceiptDisplay';
 
 const ReceiptsPage = () => {
   return (
@@ -10,14 +12,11 @@ const ReceiptsPage = () => {
       {/* Receipt Form */}
       <div className="mt-6 bg-card p-4 rounded-lg shadow-sm">
         <h2 className="text-xl font-semibold mb-4">Create New Receipt</h2>
-        {/* Form will go here */}
-        <p>Receipt form coming soon...</p>
+        <ReceiptForm />
       </div>
       {/* Receipt Display */}
-      <div className="mt-8 bg-card p-4 rounded-lg shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Generated Receipt</h2>
-        {/* Receipt display and actions will go here */}
-        <p>Receipt display coming soon...</p>
+      <div className="mt-8">
+        <ReceiptDisplay />
       </div>
     </div>
   );
