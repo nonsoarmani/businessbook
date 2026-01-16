@@ -4,23 +4,35 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
-import ScriptConverterPage from "./pages/ScriptConverter"; // Import the new main page
-import { ScriptConverterProvider } from "./state/scriptConverterStore"; // Import the new store
+import Dashboard from "./pages/Dashboard";
+import SalesPage from "./pages/SalesPage";
+import ExpensesPage from "./pages/ExpensesPage";
+import DebtsPage from "./pages/DebtsPage";
+import ReceiptsPage from "./pages/ReceiptsPage";
+import ReportsPage from "./pages/ReportsPage";
+import CashFlowPage from "./pages/CashFlowPage";
+import { BusinessProvider } from "./state/businessStore";
 
 const App = () => (
   <TooltipProvider>
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <ScriptConverterProvider> {/* Wrap the entire app with the new provider */}
+      <BusinessProvider>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<ScriptConverterPage />} /> {/* Set ScriptConverterPage as the default route */}
+            <Route index element={<Dashboard />} />
+            <Route path="/sales" element={<SalesPage />} />
+            <Route path="/expenses" element={<ExpensesPage />} />
+            <Route path="/debts" element={<DebtsPage />} />
+            <Route path="/receipts" element={<ReceiptsPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/cash-flow" element={<CashFlowPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-      </ScriptConverterProvider>
+      </BusinessProvider>
     </BrowserRouter>
   </TooltipProvider>
 );

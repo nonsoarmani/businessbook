@@ -1,9 +1,9 @@
 "use client";
 
-import ScriptConverterPage from "./ScriptConverter";
+import Dashboard from "./Dashboard";
 
 const Index = () => {
-  return <ScriptConverterPage />;
+  return <Dashboard />;
 };
 
 export default Index;

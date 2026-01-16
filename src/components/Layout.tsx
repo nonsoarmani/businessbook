@@ -7,14 +7,14 @@ import { MadeWithDyad } from './made-with-dyad';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile'; // Assuming this hook exists and works
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Layout = () => {
   const isMobile = useIsMobile();
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(!isMobile); // Open by default on desktop, closed on mobile
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(!isMobile);
 
   React.useEffect(() => {
-    setIsSidebarOpen(!isMobile); // Adjust sidebar state when mobile status changes
+    setIsSidebarOpen(!isMobile);
   }, [isMobile]);
 
   const toggleSidebar = () => {
@@ -26,7 +26,7 @@ const Layout = () => {
       {/* Mobile Header */}
       {isMobile && (
         <header className="flex items-center justify-between p-4 border-b bg-background lg:hidden">
-          <h1 className="font-bold text-lg text-primary">ShotList Pro</h1>
+          <h1 className="font-bold text-lg text-primary">BusinessBook</h1>
           <Button variant="ghost" size="icon" onClick={toggleSidebar}>
             <Menu className="h-6 w-6" />
           </Button>
@@ -37,7 +37,7 @@ const Layout = () => {
       <div className={cn(
         "flex-shrink-0 transition-all duration-300 ease-in-out",
         isSidebarOpen ? "w-[240px]" : "w-0",
-        isMobile && isSidebarOpen && "absolute inset-y-0 left-0 z-50" // Full height, on top for mobile
+        isMobile && isSidebarOpen && "absolute inset-y-0 left-0 z-50"
       )}>
         <Sidebar isCollapsed={!isSidebarOpen} onToggle={toggleSidebar} />
       </div>

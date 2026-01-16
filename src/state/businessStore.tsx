@@ -1,0 +1,98 @@
+"use client";
+
+import React, { createContext, useReducer, useContext, ReactNode } from 'react';
+import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt } from '@/types';
+
+const initialState: BusinessState = {
+  sales: [],
+  expenses: [],
+  debts: [],
+  receipts: [],
+};
+
+const businessReducer = (state: BusinessState, action: BusinessAction): BusinessState => {
+  switch (action.type) {
+    case 'ADD_SALE':
+      return { ...state, sales: [...state.sales, action.payload] };
+    case 'UPDATE_SALE':
+      return {
+        ...state,
+        sales: state.sales.map((sale) =>
+          sale.id === action.payload.id ? action.payload : sale
+        ),
+      };
+    case 'DELETE_SALE':
+      return {
+        ...state,
+        sales: state.sales.filter((sale) => sale.id !== action.payload),
+      };
+    case 'ADD_EXPENSE':
+      return { ...state, expenses: [...state.expenses, action.payload] };
+    case 'UPDATE_EXPENSE':
+      return {
+        ...state,
+        expenses: state.expenses.map((expense) =>
+          expense.id === action.payload.id ? action.payload : expense
+        ),
+      };
+    case 'DELETE_EXPENSE':
+      return {
+        ...state,
+        expenses: state.expenses.filter((expense) => expense.id !== action.payload),
+      };
+    case 'ADD_DEBT':
+      return { ...state, debts: [...state.debts, action.payload] };
+    case 'UPDATE_DEBT':
+      return {
+        ...state,
+        debts: state.debts.map((debt) =>
+          debt.id === action.payload.id ? action.payload : debt
+        ),
+      };
+    case 'DELETE_DEBT':
+      return {
+        ...state,
+        debts: state.debts.filter((debt) => debt.id !== action.payload),
+      };
+    case 'MARK_DEBT_PAID':
+      return {
+        ...state,
+        debts: state.debts.map((debt) =>
+          debt.id === action.payload.id
+            ? { ...debt, status: 'paid', datePaid: action.payload.datePaid, paidAmount: debt.originalAmount }
+            : debt
+        ),
+      };
+    case 'ADD_RECEIPT':
+      return { ...state, receipts: [...state.receipts, action.payload] };
+    case 'CLEAR_ALL_DATA':
+      return initialState;
+    default:
+      return state;
+  }
+};
+
+interface BusinessContextType {
+  state: BusinessState;
+  dispatch: React.Dispatch<BusinessAction>;
+}
+
+const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
+
+export const BusinessProvider = ({ children }: { children: ReactNode }) => {
+  const [state, dispatch] = useReducer(businessReducer, initialState);
+
+  return (
+    <BusinessContext.Provider value={{ state, dispatch }}>
+      {children}
+    </BusinessContext.Provider>
+  );
+};
+
+export const useBusiness = () => {
+  const context = useContext(BusinessContext);
+  if (context === undefined) {
+    throw new Error('useBusiness must be used within a BusinessProvider');
+  }
+  return context;
+};
