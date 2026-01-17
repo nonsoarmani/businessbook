@@ -41,58 +41,58 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-      <p className="text-muted-foreground">Welcome to BusinessBook! Your business overview will appear here.</p>
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Dashboard</h1>
+      <p className="text-muted-foreground mb-6">Welcome to BusinessBook! Your business overview will appear here.</p>
       
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold">Today's Sales</h2>
-          <p className="text-3xl font-bold text-primary">{formatNaira(totalTodaySales)}</p>
+          <h2 className="text-base md:text-lg font-semibold">Today's Sales</h2>
+          <p className="text-2xl md:text-3xl font-bold text-primary">{formatNaira(totalTodaySales)}</p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold">Today's Expenses</h2>
-          <p className="text-3xl font-bold text-destructive">{formatNaira(totalTodayExpenses)}</p>
+          <h2 className="text-base md:text-lg font-semibold">Today's Expenses</h2>
+          <p className="text-2xl md:text-3xl font-bold text-destructive">{formatNaira(totalTodayExpenses)}</p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold">Today's Profit/Loss</h2>
-          <p className={`text-3xl font-bold ${todayProfitLoss >= 0 ? 'text-success' : 'text-destructive'}`}>
+          <h2 className="text-base md:text-lg font-semibold">Today's Profit/Loss</h2>
+          <p className={`text-2xl md:text-3xl font-bold ${todayProfitLoss >= 0 ? 'text-success' : 'text-destructive'}`}>
             {formatNaira(todayProfitLoss)}
           </p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold">Total Customers</h2>
-          <p className="text-3xl font-bold text-primary">{totalCustomers}</p>
+          <h2 className="text-base md:text-lg font-semibold">Total Customers</h2>
+          <p className="text-2xl md:text-3xl font-bold text-primary">{totalCustomers}</p>
         </div>
       </div>
       
       {/* Quick Actions */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-4">
-          <Button asChild>
+      <div className="mb-8">
+        <h2 className="text-xl md:text-2xl font-semibold mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <Button asChild className="w-full">
             <Link to="/sales">
               <PlusCircle className="mr-2 h-4 w-4" /> Add Sale
             </Link>
           </Button>
-          <Button asChild variant="secondary">
+          <Button asChild variant="secondary" className="w-full">
             <Link to="/expenses">
               <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
             </Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-full">
             <Link to="/debts">
               <PlusCircle className="mr-2 h-4 w-4" /> Record Debt
             </Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-full">
             <Link to="/customers">
               <Users className="mr-2 h-4 w-4" /> Manage Customers
             </Link>
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive">
+              <Button variant="destructive" className="w-full sm:col-span-2 lg:col-span-1">
                 <Trash2 className="mr-2 h-4 w-4" /> Clear All Data
               </Button>
             </AlertDialogTrigger>
@@ -105,9 +105,7 @@ const Dashboard = () => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearAllData}>
-                  Confirm Clear
-                </AlertDialogAction>
+                <AlertDialogAction onClick={handleClearAllData}>Confirm Clear</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -115,8 +113,8 @@ const Dashboard = () => {
       </div>
       
       {/* Recent Activity */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
+      <div>
+        <h2 className="text-xl md:text-2xl font-semibold mb-4">Recent Activity</h2>
         <div className="bg-card p-4 rounded-lg shadow-sm">
           <p className="text-muted-foreground">No recent activity.</p>
         </div>

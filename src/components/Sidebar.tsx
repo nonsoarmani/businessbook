@@ -3,7 +3,18 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LayoutDashboard, ShoppingCart, Wallet, Handshake, ReceiptText, BarChart, Banknote, Settings, Users, X } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  ShoppingCart, 
+  Wallet, 
+  Handshake, 
+  ReceiptText, 
+  BarChart, 
+  Banknote, 
+  Settings, 
+  Users, 
+  X 
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -18,7 +29,7 @@ const navItems = [
   { name: 'Expenses', icon: Wallet, path: '/expenses' },
   { name: 'Debts', icon: Handshake, path: '/debts' },
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
-  { name: 'Customers', icon: Users, path: '/customers' }, // New customers page
+  { name: 'Customers', icon: Users, path: '/customers' },
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
   { name: 'Settings', icon: Settings, path: '/settings' },
@@ -56,6 +67,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
           </Button>
         )}
       </div>
+      
       <ScrollArea className="flex-1 py-4">
         <nav className="grid items-start gap-2 px-2">
           {navItems.map((item) => (
@@ -84,6 +96,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
           ))}
         </nav>
       </ScrollArea>
+      
       <div className="mt-auto p-2 border-t text-center text-xs text-muted-foreground">
         <p className={cn(isCollapsed ? "hidden" : "block")}>Manage your business</p>
       </div>

@@ -1,5 +1,4 @@
 "use client";
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DailySummary from '@/components/reports/DailySummary';
@@ -12,18 +11,29 @@ import ExpensesByCategoryReport from '@/components/reports/ExpensesByCategoryRep
 const ReportsPage = () => {
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      <h1 className="text-3xl font-bold mb-6">Business Reports</h1>
-      <p className="text-muted-foreground mb-8">View daily, weekly, and monthly summaries of your business performance, along with other key reports.</p>
-
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Business Reports</h1>
+      <p className="text-muted-foreground mb-6">View daily, weekly, and monthly summaries of your business performance, along with other key reports.</p>
+      
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="weekly">Weekly</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly</TabsTrigger>
-          <TabsTrigger value="debts">Debts</TabsTrigger>
-          <TabsTrigger value="sales-by-payment">Sales by Payment</TabsTrigger>
-          <TabsTrigger value="expenses-by-category">Expenses by Category</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
+          <TabsTrigger value="daily" className="text-xs md:text-sm">Daily</TabsTrigger>
+          <TabsTrigger value="weekly" className="text-xs md:text-sm">Weekly</TabsTrigger>
+          <TabsTrigger value="monthly" className="text-xs md:text-sm">Monthly</TabsTrigger>
+          <TabsTrigger value="debts" className="text-xs md:text-sm">Debts</TabsTrigger>
+          <TabsTrigger value="sales-by-payment" className="text-xs md:text-sm hidden md:block">Sales by Payment</TabsTrigger>
+          <TabsTrigger value="expenses-by-category" className="text-xs md:text-sm hidden md:block">Expenses by Category</TabsTrigger>
         </TabsList>
+        
+        {/* Mobile tabs for smaller screens */}
+        <div className="md:hidden grid grid-cols-2 gap-2 mt-2">
+          <TabsList className="h-auto">
+            <TabsTrigger value="sales-by-payment" className="text-xs w-full">Sales by Payment</TabsTrigger>
+          </TabsList>
+          <TabsList className="h-auto">
+            <TabsTrigger value="expenses-by-category" className="text-xs w-full">Expenses by Category</TabsTrigger>
+          </TabsList>
+        </div>
+        
         <TabsContent value="daily" className="mt-6">
           <DailySummary />
         </TabsContent>
