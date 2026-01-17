@@ -14,10 +14,12 @@ import {
   Settings, 
   Users, 
   Box,
-  X 
+  X,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -39,6 +41,15 @@ const navItems = [
 
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <div
@@ -69,7 +80,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
           </Button>
         )}
       </div>
-      
+
       <ScrollArea className="flex-1 py-4">
         <nav className="grid items-start gap-2 px-2">
           {navItems.map((item) => (
@@ -98,7 +109,25 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
           ))}
         </nav>
       </ScrollArea>
-      
+
+      <div className="p-2 border-t">
+        <Button
+          variant="ghost"
+          className="w-full justify-start"
+          onClick={handleSignOut}
+        >
+          <LogOut className="h-5 w-5 mr-3" />
+          <span
+            className={cn(
+              "transition-opacity duration-300",
+              isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+            )}
+          >
+            Logout
+          </span>
+        </Button>
+      </div>
+
       <div className="mt-auto p-2 border-t text-center text-xs text-muted-foreground">
         <p className={cn(isCollapsed ? "hidden" : "block")}>Manage your business</p>
       </div>
