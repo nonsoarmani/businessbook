@@ -1,19 +1,10 @@
 "use client";
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-
 import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useBusiness } from '@/state/businessStore';
@@ -33,7 +24,6 @@ type BusinessSettingsFormValues = z.infer<typeof businessSettingsSchema>;
 const BusinessSettingsForm = () => {
   const { state, dispatch } = useBusiness();
   const { settings } = state;
-
   const form = useForm<BusinessSettingsFormValues>({
     resolver: zodResolver(businessSettingsSchema),
     defaultValues: {
@@ -78,7 +68,6 @@ const BusinessSettingsForm = () => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="businessEmail"
@@ -92,7 +81,6 @@ const BusinessSettingsForm = () => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="businessPhone"
@@ -106,7 +94,6 @@ const BusinessSettingsForm = () => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="businessAddress"
@@ -120,7 +107,6 @@ const BusinessSettingsForm = () => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="businessLogoUrl"
@@ -134,7 +120,6 @@ const BusinessSettingsForm = () => {
             </FormItem>
           )}
         />
-
         <Button type="submit" className="w-full">
           Save Settings
         </Button>
