@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks, parseISO } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,6 +83,13 @@ const CashFlowChart = () => {
 
   const dataKeyFormat = chartPeriod === 'Daily' ? 'dd/MM' : 'MMM yyyy';
 
+  // Format date without parsing since it's already a string
+  const formatDateLabel = (dateString: string, formatString: string) => {
+    // Create a date object directly from the string since it's in yyyy-MM-dd format
+    const date = new Date(dateString);
+    return format(date, formatString);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -148,11 +155,11 @@ const CashFlowChart = () => {
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis
                   dataKey="date"
-                  tickFormatter={(value) => format(parseISO(value), dataKeyFormat)}
+                  tickFormatter={(value) => formatDateLabel(value, dataKeyFormat)}
                   className="text-xs"
                 />
                 <YAxis tickFormatter={(value) => formatNaira(value)} className="text-xs" />
-                <Tooltip formatter={(value: number) => formatNaira(value)} labelFormatter={(label) => format(parseISO(label), 'PPP')} />
+                <Tooltip formatter={(value: number) => formatNaira(value)} labelFormatter={(label) => formatDateLabel(label, 'PPP')} />
                 <Legend />
                 <Line type="monotone" dataKey="income" stroke="hsl(var(--success))" activeDot={{ r: 8 }} name="Income" />
                 <Line type="monotone" dataKey="expense" stroke="hsl(var(--destructive))" activeDot={{ r: 8 }} name="Expense" />

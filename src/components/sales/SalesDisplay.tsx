@@ -2,29 +2,17 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ArrowUpDown, Search, FileText } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira, exportToCSV } from '@/lib/utils';
-import {
-  filterSalesByPeriod,
-  calculateTotalSales,
-  calculatePaymentMethodBreakdown,
-  calculateWeekOverWeekComparison,
-  getSalesForDay
-} from '@/utils/salesCalculations';
+import { filterSalesByPeriod, calculateTotalSales, calculatePaymentMethodBreakdown, calculateWeekOverWeekComparison, getSalesForDay } from '@/utils/salesCalculations';
 import { Sale } from '@/types';
+import type { ColumnHeader } from '@/lib/utils';
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month';
 type SortKey = 'date' | 'item' | 'amount' | 'paymentMethod';
@@ -32,7 +20,6 @@ type SortKey = 'date' | 'item' | 'amount' | 'paymentMethod';
 const SalesDisplay = () => {
   const { state } = useBusiness();
   const { sales } = state;
-
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
@@ -40,13 +27,11 @@ const SalesDisplay = () => {
 
   const filteredSales = useMemo(() => {
     let currentSales = filterSalesByPeriod(sales, filterPeriod);
-
     if (searchTerm) {
       currentSales = currentSales.filter(sale =>
         sale.item.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     // Sort sales
     currentSales.sort((a, b) => {
       let comparison = 0;
@@ -61,7 +46,6 @@ const SalesDisplay = () => {
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-
     return currentSales;
   }, [sales, filterPeriod, searchTerm, sortKey, sortOrder]);
 
@@ -69,7 +53,10 @@ const SalesDisplay = () => {
   const totalTodaySales = calculateTotalSales(todaySales);
   const todayPaymentBreakdown = calculatePaymentMethodBreakdown(todaySales);
 
-  const { currentWeekSales, lastWeekSales, percentageChange } = useMemo(() => calculateWeekOverWeekComparison(sales), [sales]);
+  const { currentWeekSales, lastWeekSales, percentageChange } = useMemo(
+    () => calculateWeekOverWeekComparison(sales),
+    [sales]
+  );
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -81,7 +68,7 @@ const SalesDisplay = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = [
+    const headers: ColumnHeader<Sale>[] = [
       { key: 'date', label: 'Date' },
       { key: 'item', label: 'Item' },
       { key: 'amount', label: 'Amount (₦)' },
@@ -146,7 +133,8 @@ const SalesDisplay = () => {
               ))}
             </div>
             <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto">
-              <FileText className="mr-2 h-4 w-4" /> Export to CSV
+              <FileText className="mr-2 h-4 w-4" />
+              Export to CSV
             </Button>
           </div>
 
@@ -183,16 +171,28 @@ const SalesDisplay = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('date')}>
-                    Date {sortKey === 'date' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Date
+                    {sortKey === 'date' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('item')}>
-                    Item {sortKey === 'item' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Item
+                    {sortKey === 'item' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="text-right cursor-pointer" onClick={() => handleSort('amount')}>
-                    Amount {sortKey === 'amount' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Amount
+                    {sortKey === 'amount' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('paymentMethod')}>
-                    Payment Method {sortKey === 'paymentMethod' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Payment Method
+                    {sortKey === 'paymentMethod' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                 </TableRow>
               </TableHeader>
