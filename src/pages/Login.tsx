@@ -45,8 +45,8 @@ const Login = () => {
         <CardHeader>
           <CardTitle>{isSignUp ? 'Create Account' : 'Login'}</CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? 'Enter your details to create an account' 
+            {isSignUp
+              ? 'Enter your details to create an account'
               : 'Enter your credentials to access your account'}
           </CardDescription>
         </CardHeader>
@@ -83,8 +83,8 @@ const Login = () => {
               onClick={() => setIsSignUp(!isSignUp)}
               className="w-full"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign In' 
+              {isSignUp
+                ? 'Already have an account? Sign In'
                 : "Don't have an account? Sign Up"}
             </Button>
           </CardFooter>
