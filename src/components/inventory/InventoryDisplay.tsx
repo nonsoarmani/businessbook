@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 
 const InventoryDisplay = () => {
   const { state } = useBusiness();
-  const { inventory } = state;
+  const { inventory = [] } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
 
