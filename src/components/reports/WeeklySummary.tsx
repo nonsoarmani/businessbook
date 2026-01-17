@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, subWeeks, addWeeks, isWithinInterval, parseISO } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,24 +10,37 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira } from '@/lib/utils';
-import { calculateTotalSales, filterSalesByPeriod, calculateWeekOverWeekComparison } from '@/utils/salesCalculations';
-import { calculateTotalExpenses, filterExpensesByPeriod, calculateWeekOverWeekExpenseComparison } from '@/utils/expenseCalculations';
+import { calculateTotalSales, calculateWeekOverWeekComparison } from '@/utils/salesCalculations';
+import { calculateTotalExpenses, calculateWeekOverWeekExpenseComparison } from '@/utils/expenseCalculations';
 
 const WeeklySummary = () => {
   const { state } = useBusiness();
   const { sales, expenses } = state;
-
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 })); // Monday
 
-  const currentWeekSalesData = useMemo(() => filterSalesByPeriod(sales, 'All', currentWeekStart, endOfWeek(currentWeekStart, { weekStartsOn: 1 })), [sales, currentWeekStart]);
+  const currentWeekSalesData = useMemo(() => {
+    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+    return sales.filter(sale => {
+      const saleDate = parseISO(sale.date);
+      return isWithinInterval(saleDate, { start: currentWeekStart, end: weekEnd });
+    });
+  }, [sales, currentWeekStart]);
+
   const totalCurrentWeekSales = useMemo(() => calculateTotalSales(currentWeekSalesData), [currentWeekSalesData]);
 
-  const currentWeekExpensesData = useMemo(() => filterExpensesByPeriod(expenses, 'All', currentWeekStart, endOfWeek(currentWeekStart, { weekStartsOn: 1 })), [expenses, currentWeekStart]);
-  const totalCurrentWeekExpenses = useMemo(() => calculateTotalExpenses(currentWeekExpensesData), [currentWeekExpensesData]);
+  const currentWeekExpensesData = useMemo(() => {
+    const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+    return expenses.filter(expense => {
+      const expenseDate = parseISO(expense.date);
+      return isWithinInterval(expenseDate, { start: currentWeekStart, end: weekEnd });
+    });
+  }, [expenses, currentWeekStart]);
 
+  const totalCurrentWeekExpenses = useMemo(() => calculateTotalExpenses(currentWeekExpensesData), [currentWeekExpensesData]);
   const currentWeekProfitLoss = totalCurrentWeekSales - totalCurrentWeekExpenses;
 
   const { currentWeekSales: wowCurrentSales, lastWeekSales: wowLastSales, percentageChange: wowSalesChange } = useMemo(() => calculateWeekOverWeekComparison(sales), [sales]);
+
   const { currentWeekExpenses: wowCurrentExpenses, lastWeekExpenses: wowLastExpenses, percentageChange: wowExpensesChange } = useMemo(() => calculateWeekOverWeekExpenseComparison(expenses), [expenses]);
 
   const handlePreviousWeek = () => {
@@ -100,9 +113,7 @@ const WeeklySummary = () => {
             </p>
           </div>
         </div>
-
         <Separator />
-
         <div>
           <h3 className="text-xl font-semibold mb-3">Week-over-Week Comparison</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

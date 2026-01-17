@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,26 +10,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira } from '@/lib/utils';
-import { calculateTotalSales, calculatePaymentMethodBreakdown, filterSalesByPeriod } from '@/utils/salesCalculations';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { calculateTotalSales, calculatePaymentMethodBreakdown } from '@/utils/salesCalculations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import type { DateRange } from "react-day-picker";
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month' | 'Custom';
 
 const SalesByPaymentMethodReport = () => {
   const { state } = useBusiness();
   const { sales } = state;
-
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('This Month');
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const handlePeriodChange = (period: FilterPeriod) => {
     setFilterPeriod(period);
@@ -41,7 +32,7 @@ const SalesByPaymentMethodReport = () => {
     } else if (period === 'This Month') {
       setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
     } else if (period === 'All') {
-      setDateRange({}); // Clear custom range
+      setDateRange(undefined); // Clear custom range
     }
   };
 
@@ -49,7 +40,37 @@ const SalesByPaymentMethodReport = () => {
     if (filterPeriod === 'All') {
       return sales;
     }
-    return filterSalesByPeriod(sales, filterPeriod, dateRange.from, dateRange.to);
+    
+    if (filterPeriod === 'Custom' && dateRange?.from && dateRange?.to) {
+      return sales.filter(sale => {
+        const saleDate = parseISO(sale.date);
+        return isWithinInterval(saleDate, { start: dateRange.from!, end: dateRange.to! });
+      });
+    }
+    
+    // For predefined periods, we need to filter manually
+    const today = new Date();
+    switch (filterPeriod) {
+      case 'Today':
+        const todayStr = format(today, 'yyyy-MM-dd');
+        return sales.filter(sale => sale.date === todayStr);
+      case 'This Week':
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return sales.filter(sale => {
+          const saleDate = parseISO(sale.date);
+          return isWithinInterval(saleDate, { start: weekStart, end: weekEnd });
+        });
+      case 'This Month':
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return sales.filter(sale => {
+          const saleDate = parseISO(sale.date);
+          return isWithinInterval(saleDate, { start: monthStart, end: monthEnd });
+        });
+      default:
+        return sales;
+    }
   }, [sales, filterPeriod, dateRange]);
 
   const totalSales = useMemo(() => calculateTotalSales(filteredSales), [filteredSales]);
@@ -82,11 +103,11 @@ const SalesByPaymentMethodReport = () => {
                     variant={'outline'}
                     className={cn(
                       'w-[240px] justify-start text-left font-normal',
-                      !dateRange.from && 'text-muted-foreground'
+                      !dateRange?.from && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
+                    {dateRange?.from ? (
                       dateRange.to ? (
                         <>
                           {format(dateRange.from, 'LLL dd, y')} -{' '}
@@ -119,9 +140,7 @@ const SalesByPaymentMethodReport = () => {
           <h3 className="text-lg font-semibold">Total Sales for Period</h3>
           <p className="text-3xl font-bold text-primary">{formatNaira(totalSales)}</p>
         </div>
-
         <Separator />
-
         <div>
           <h3 className="text-xl font-semibold mb-3">Breakdown by Payment Method</h3>
           {totalSales > 0 ? (

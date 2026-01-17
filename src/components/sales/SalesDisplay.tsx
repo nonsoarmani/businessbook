@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatNaira, exportToCSV } from '@/lib/utils';
+import { cn, formatNaira, exportToCSV, ColumnHeader } from '@/lib/utils';
 import { filterSalesByPeriod, calculateTotalSales, calculatePaymentMethodBreakdown, calculateWeekOverWeekComparison, getSalesForDay } from '@/utils/salesCalculations';
 import { Sale } from '@/types';
-import type { ColumnHeader } from '@/lib/utils';
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month';
 type SortKey = 'date' | 'item' | 'amount' | 'paymentMethod';

@@ -21,7 +21,13 @@ export function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
-export function exportToCSV<T>(filename: string, data: T[], headers: { key: keyof T; label: string }[]) {
+// Add ColumnHeader type
+export type ColumnHeader<T> = {
+  key: keyof T;
+  label: string;
+};
+
+export function exportToCSV<T>(filename: string, data: T[], headers: ColumnHeader<T>[]) {
   if (!data || data.length === 0) {
     console.warn("No data to export to CSV.");
     return;
@@ -74,5 +80,6 @@ export async function exportReceiptToPDF(element: HTMLElement, filename: string)
     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
   }
+
   pdf.save(`${filename}.pdf`);
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,32 +10,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  calculateTotalIncome,
-  calculateTotalExpenses,
-  calculateNetCashFlow,
-  getIncomeByPaymentMethod,
-  getExpensesByCategory,
-} from '@/utils/cashFlowCalculations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import { calculateTotalIncome, calculateTotalExpenses, calculateNetCashFlow, getIncomeByPaymentMethod, getExpensesByCategory, } from '@/utils/cashFlowCalculations';
+import type { DateRange } from "react-day-picker";
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month' | 'Custom';
 
 const CashFlowSummary = () => {
   const { state } = useBusiness();
   const { sales, expenses } = state;
-
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('This Month');
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const handlePeriodChange = (period: FilterPeriod) => {
     setFilterPeriod(period);
@@ -47,24 +32,89 @@ const CashFlowSummary = () => {
     } else if (period === 'This Month') {
       setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
     } else if (period === 'All') {
-      setDateRange({}); // Clear custom range
+      setDateRange(undefined); // Clear custom range
     }
   };
 
-  const totalIncome = useMemo(() => calculateTotalIncome(sales.filter(sale =>
-    (!dateRange.from || new Date(sale.date) >= dateRange.from) &&
-    (!dateRange.to || new Date(sale.date) <= dateRange.to)
-  )), [sales, dateRange]);
+  const filteredSales = useMemo(() => {
+    if (filterPeriod === 'All') {
+      return sales;
+    }
+    
+    if (filterPeriod === 'Custom' && dateRange?.from && dateRange?.to) {
+      return sales.filter(sale => {
+        const saleDate = parseISO(sale.date);
+        return isWithinInterval(saleDate, { start: dateRange.from!, end: dateRange.to! });
+      });
+    }
+    
+    // For predefined periods, we need to filter manually
+    const today = new Date();
+    switch (filterPeriod) {
+      case 'Today':
+        const todayStr = format(today, 'yyyy-MM-dd');
+        return sales.filter(sale => sale.date === todayStr);
+      case 'This Week':
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return sales.filter(sale => {
+          const saleDate = parseISO(sale.date);
+          return isWithinInterval(saleDate, { start: weekStart, end: weekEnd });
+        });
+      case 'This Month':
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return sales.filter(sale => {
+          const saleDate = parseISO(sale.date);
+          return isWithinInterval(saleDate, { start: monthStart, end: monthEnd });
+        });
+      default:
+        return sales;
+    }
+  }, [sales, filterPeriod, dateRange]);
 
-  const totalExpenses = useMemo(() => calculateTotalExpenses(expenses.filter(expense =>
-    (!dateRange.from || new Date(expense.date) >= dateRange.from) &&
-    (!dateRange.to || new Date(expense.date) <= dateRange.to)
-  )), [expenses, dateRange]);
+  const filteredExpenses = useMemo(() => {
+    if (filterPeriod === 'All') {
+      return expenses;
+    }
+    
+    if (filterPeriod === 'Custom' && dateRange?.from && dateRange?.to) {
+      return expenses.filter(expense => {
+        const expenseDate = parseISO(expense.date);
+        return isWithinInterval(expenseDate, { start: dateRange.from!, end: dateRange.to! });
+      });
+    }
+    
+    // For predefined periods, we need to filter manually
+    const today = new Date();
+    switch (filterPeriod) {
+      case 'Today':
+        const todayStr = format(today, 'yyyy-MM-dd');
+        return expenses.filter(expense => expense.date === todayStr);
+      case 'This Week':
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return expenses.filter(expense => {
+          const expenseDate = parseISO(expense.date);
+          return isWithinInterval(expenseDate, { start: weekStart, end: weekEnd });
+        });
+      case 'This Month':
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return expenses.filter(expense => {
+          const expenseDate = parseISO(expense.date);
+          return isWithinInterval(expenseDate, { start: monthStart, end: monthEnd });
+        });
+      default:
+        return expenses;
+    }
+  }, [expenses, filterPeriod, dateRange]);
 
-  const netCashFlow = useMemo(() => calculateNetCashFlow(sales, expenses, dateRange.from, dateRange.to), [sales, expenses, dateRange]);
-
-  const incomeBreakdown = useMemo(() => getIncomeByPaymentMethod(sales, dateRange.from, dateRange.to), [sales, dateRange]);
-  const expenseBreakdown = useMemo(() => getExpensesByCategory(expenses, dateRange.from, dateRange.to), [expenses, dateRange]);
+  const totalIncome = useMemo(() => calculateTotalIncome(filteredSales), [filteredSales]);
+  const totalExpenses = useMemo(() => calculateTotalExpenses(filteredExpenses), [filteredExpenses]);
+  const netCashFlow = useMemo(() => calculateNetCashFlow(sales, expenses, dateRange?.from, dateRange?.to), [sales, expenses, dateRange]);
+  const incomeBreakdown = useMemo(() => getIncomeByPaymentMethod(sales, dateRange?.from, dateRange?.to), [sales, dateRange]);
+  const expenseBreakdown = useMemo(() => getExpensesByCategory(expenses, dateRange?.from, dateRange?.to), [expenses, dateRange]);
 
   const isCustomRangeSelected = filterPeriod === 'Custom';
 
@@ -93,11 +143,11 @@ const CashFlowSummary = () => {
                     variant={'outline'}
                     className={cn(
                       'w-[240px] justify-start text-left font-normal',
-                      !dateRange.from && 'text-muted-foreground'
+                      !dateRange?.from && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
+                    {dateRange?.from ? (
                       dateRange.to ? (
                         <>
                           {format(dateRange.from, 'LLL dd, y')} -{' '}
@@ -142,9 +192,7 @@ const CashFlowSummary = () => {
             </p>
           </div>
         </div>
-
         <Separator />
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h3 className="text-xl font-semibold mb-3">Income by Payment Method</h3>
@@ -161,7 +209,6 @@ const CashFlowSummary = () => {
               <p className="text-muted-foreground text-sm">No income recorded for this period.</p>
             )}
           </div>
-
           <div>
             <h3 className="text-xl font-semibold mb-3">Expenses by Category</h3>
             {expenseBreakdown.length > 0 ? (

@@ -4,41 +4,19 @@ import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { format, parseISO } from 'date-fns';
 import { ArrowUpDown, Search, FileText, AlertCircle, CalendarIcon } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatNaira, exportToCSV } from '@/lib/utils';
-import {
-  filterExpensesByPeriod,
-  calculateTotalExpenses,
-  getExpensesForDay,
-  groupExpensesByCategory,
-  calculateWeekOverWeekExpenseComparison,
-  calculateTotalSales, // Re-import from salesCalculations if needed, or define here
-  getTotalExpensesLast7Days,
-  checkPersonalUseWarning,
-  checkCategoryIncreaseWarning
-} from '@/utils/expenseCalculations'; // Using expenseCalculations for all expense-related calcs
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { cn, formatNaira, exportToCSV, ColumnHeader } from '@/lib/utils';
+import { filterExpensesByPeriod, calculateTotalExpenses, getExpensesForDay, groupExpensesByCategory, calculateWeekOverWeekExpenseComparison, calculateTotalSales, getTotalExpensesLast7Days, checkPersonalUseWarning, checkCategoryIncreaseWarning } from '@/utils/expenseCalculations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Expense } from '@/types';
+import type { DateRange } from "react-day-picker";
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month' | 'Custom';
 type SortKey = 'date' | 'name' | 'amount' | 'category';
@@ -58,33 +36,42 @@ const expenseCategories = [
 const ExpenseDisplay = () => {
   const { state } = useBusiness();
   const { expenses, sales } = state;
-
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('All');
   const [selectedCategory, setSelectedCategory] = useState<typeof expenseCategories[number]>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Newest first by default
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const todaySales = useMemo(() => {
     const today = new Date();
     return sales.filter(sale => format(parseISO(sale.date), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd'));
   }, [sales]);
+
   const totalTodaySales = calculateTotalSales(todaySales);
 
   const filteredExpenses = useMemo(() => {
-    let currentExpenses = filterExpensesByPeriod(expenses, filterPeriod, dateRange.from, dateRange.to);
-
+    let currentExpenses = [...expenses];
+    
+    // Apply date filtering
+    if (filterPeriod !== 'All') {
+      if (filterPeriod === 'Custom' && dateRange?.from && dateRange?.to) {
+        currentExpenses = filterExpensesByPeriod(expenses, 'All', dateRange.from, dateRange.to);
+      } else if (filterPeriod !== 'Custom') {
+        currentExpenses = filterExpensesByPeriod(expenses, filterPeriod);
+      }
+    }
+    
     if (selectedCategory !== 'All') {
       currentExpenses = currentExpenses.filter(expense => expense.category === selectedCategory);
     }
-
+    
     if (searchTerm) {
       currentExpenses = currentExpenses.filter(expense =>
         expense.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
+    
     // Sort expenses
     currentExpenses.sort((a, b) => {
       let comparison = 0;
@@ -99,7 +86,7 @@ const ExpenseDisplay = () => {
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-
+    
     return currentExpenses;
   }, [expenses, filterPeriod, selectedCategory, searchTerm, sortKey, sortOrder, dateRange]);
 
@@ -107,7 +94,11 @@ const ExpenseDisplay = () => {
   const totalTodayExpenses = calculateTotalExpenses(todayExpenses);
   const todayExpensesExceedSales = totalTodayExpenses > totalTodaySales && totalTodaySales > 0;
 
-  const { currentWeekExpenses, lastWeekExpenses, percentageChange } = useMemo(() => calculateWeekOverWeekExpenseComparison(expenses), [expenses]);
+  const { currentWeekExpenses, lastWeekExpenses, percentageChange } = useMemo(
+    () => calculateWeekOverWeekExpenseComparison(expenses),
+    [expenses]
+  );
+
   const totalExpensesLast7Days = useMemo(() => getTotalExpensesLast7Days(expenses), [expenses]);
   const weeklyCategoryBreakdown = useMemo(() => groupExpensesByCategory(filterExpensesByPeriod(expenses, 'This Week')), [expenses]);
   const top3ExpenseCategories = weeklyCategoryBreakdown.slice(0, 3);
@@ -125,7 +116,7 @@ const ExpenseDisplay = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = [
+    const headers: ColumnHeader<Expense>[] = [
       { key: 'date', label: 'Date' },
       { key: 'name', label: 'Expense Name' },
       { key: 'category', label: 'Category' },
@@ -193,7 +184,7 @@ const ExpenseDisplay = () => {
                   variant={filterPeriod === period ? 'default' : 'outline'}
                   onClick={() => {
                     setFilterPeriod(period);
-                    setDateRange({}); // Clear custom range when selecting predefined period
+                    setDateRange(undefined); // Clear custom range when selecting predefined period
                   }}
                   className="min-w-[100px]"
                 >
@@ -206,13 +197,13 @@ const ExpenseDisplay = () => {
                     variant={'outline'}
                     className={cn(
                       'w-full md:w-[200px] justify-start text-left font-normal',
-                      !dateRange.from && 'text-muted-foreground',
+                      !dateRange?.from && 'text-muted-foreground',
                       filterPeriod === 'Custom' && 'bg-accent'
                     )}
                     onClick={() => setFilterPeriod('Custom')}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
+                    {dateRange?.from ? (
                       dateRange.to ? (
                         <>
                           {format(dateRange.from, 'LLL dd, y')} -{' '}
@@ -238,25 +229,37 @@ const ExpenseDisplay = () => {
               </Popover>
             </div>
             <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto">
-              <FileText className="mr-2 h-4 w-4" /> Export to CSV
+              <FileText className="mr-2 h-4 w-4" />
+              Export to CSV
             </Button>
           </div>
-
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('date')}>
-                    Date {sortKey === 'date' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Date
+                    {sortKey === 'date' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('name')}>
-                    Name {sortKey === 'name' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Name
+                    {sortKey === 'name' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="cursor-pointer" onClick={() => handleSort('category')}>
-                    Category {sortKey === 'category' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Category
+                    {sortKey === 'category' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                   <TableHead className="text-right cursor-pointer" onClick={() => handleSort('amount')}>
-                    Amount {sortKey === 'amount' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                    Amount
+                    {sortKey === 'amount' && (
+                      <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />
+                    )}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -305,7 +308,6 @@ const ExpenseDisplay = () => {
               <p className="text-sm text-muted-foreground">No expenses recorded this week.</p>
             )}
           </div>
-
           <div className="mb-4 p-4 border rounded-lg bg-muted/40">
             <h3 className="text-lg font-semibold mb-2">Week-over-Week Expense Comparison</h3>
             <p className="text-sm text-muted-foreground">
@@ -333,9 +335,8 @@ const ExpenseDisplay = () => {
               </p>
             )}
           </div>
-
           {personalUseWarning && (
-            <Alert variant="warning">
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Personal Use Warning!</AlertTitle>
               <AlertDescription>
@@ -343,7 +344,6 @@ const ExpenseDisplay = () => {
               </AlertDescription>
             </Alert>
           )}
-
           {categoryIncreaseWarnings.length > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />

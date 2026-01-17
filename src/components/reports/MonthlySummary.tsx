@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, subMonths, addMonths, isSameMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths, addMonths, isWithinInterval, parseISO } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,29 +10,60 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira } from '@/lib/utils';
-import { calculateTotalSales, filterSalesByPeriod } from '@/utils/salesCalculations';
-import { calculateTotalExpenses, filterExpensesByPeriod } from '@/utils/expenseCalculations';
+import { calculateTotalSales } from '@/utils/salesCalculations';
+import { calculateTotalExpenses } from '@/utils/expenseCalculations';
 
 const MonthlySummary = () => {
   const { state } = useBusiness();
   const { sales, expenses } = state;
-
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
 
-  const currentMonthSalesData = useMemo(() => filterSalesByPeriod(sales, 'All', startOfMonth(selectedMonth), endOfMonth(selectedMonth)), [sales, selectedMonth]);
+  const currentMonthSalesData = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return sales.filter(sale => {
+      const saleDate = parseISO(sale.date);
+      return isWithinInterval(saleDate, { start: monthStart, end: monthEnd });
+    });
+  }, [sales, selectedMonth]);
+
   const totalCurrentMonthSales = useMemo(() => calculateTotalSales(currentMonthSalesData), [currentMonthSalesData]);
 
-  const currentMonthExpensesData = useMemo(() => filterExpensesByPeriod(expenses, 'All', startOfMonth(selectedMonth), endOfMonth(selectedMonth)), [expenses, selectedMonth]);
-  const totalCurrentMonthExpenses = useMemo(() => calculateTotalExpenses(currentMonthExpensesData), [currentMonthExpensesData]);
+  const currentMonthExpensesData = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
+    return expenses.filter(expense => {
+      const expenseDate = parseISO(expense.date);
+      return isWithinInterval(expenseDate, { start: monthStart, end: monthEnd });
+    });
+  }, [expenses, selectedMonth]);
 
+  const totalCurrentMonthExpenses = useMemo(() => calculateTotalExpenses(currentMonthExpensesData), [currentMonthExpensesData]);
   const currentMonthProfitLoss = totalCurrentMonthSales - totalCurrentMonthExpenses;
 
   // Month-over-month comparison
   const lastMonth = subMonths(selectedMonth, 1);
-  const lastMonthSalesData = useMemo(() => filterSalesByPeriod(sales, 'All', startOfMonth(lastMonth), endOfMonth(lastMonth)), [sales, lastMonth]);
+
+  const lastMonthSalesData = useMemo(() => {
+    const monthStart = startOfMonth(lastMonth);
+    const monthEnd = endOfMonth(lastMonth);
+    return sales.filter(sale => {
+      const saleDate = parseISO(sale.date);
+      return isWithinInterval(saleDate, { start: monthStart, end: monthEnd });
+    });
+  }, [sales, lastMonth]);
+
   const totalLastMonthSales = useMemo(() => calculateTotalSales(lastMonthSalesData), [lastMonthSalesData]);
 
-  const lastMonthExpensesData = useMemo(() => filterExpensesByPeriod(expenses, 'All', startOfMonth(lastMonth), endOfMonth(lastMonth)), [expenses, lastMonth]);
+  const lastMonthExpensesData = useMemo(() => {
+    const monthStart = startOfMonth(lastMonth);
+    const monthEnd = endOfMonth(lastMonth);
+    return expenses.filter(expense => {
+      const expenseDate = parseISO(expense.date);
+      return isWithinInterval(expenseDate, { start: monthStart, end: monthEnd });
+    });
+  }, [expenses, lastMonth]);
+
   const totalLastMonthExpenses = useMemo(() => calculateTotalExpenses(lastMonthExpensesData), [lastMonthExpensesData]);
 
   const salesMonthOverMonthChange = useMemo(() => {
@@ -52,7 +83,6 @@ const MonthlySummary = () => {
     }
     return null;
   }, [totalCurrentMonthExpenses, totalLastMonthExpenses]);
-
 
   const handlePreviousMonth = () => {
     setSelectedMonth(prev => subMonths(prev, 1));
@@ -125,9 +155,7 @@ const MonthlySummary = () => {
             </p>
           </div>
         </div>
-
         <Separator />
-
         <div>
           <h3 className="text-xl font-semibold mb-3">Month-over-Month Comparison</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

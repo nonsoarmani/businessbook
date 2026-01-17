@@ -4,45 +4,22 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { format, parseISO } from 'date-fns';
 import { ArrowUpDown, Search, FileText, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn, formatNaira, exportToCSV } from '@/lib/utils';
-import {
-  updateDebtStatus,
-  calculateTotalOutstandingDebts,
-  getOverdueDebts,
-  getDebtsDueSoon,
-} from '@/utils/debtCalculations';
+import { cn, formatNaira, exportToCSV, ColumnHeader } from '@/lib/utils';
+import { updateDebtStatus, calculateTotalOutstandingDebts, getOverdueDebts, getDebtsDueSoon, } from '@/utils/debtCalculations';
 import { Debt } from '@/types';
 import { showSuccess, showError } from '@/utils/toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, } from '@/components/ui/alert-dialog';
 
 type SortKey = 'customerName' | 'originalAmount' | 'amountOwed' | 'dateGiven' | 'dueDate' | 'status';
 
 const DebtDisplay = () => {
   const { state, dispatch } = useBusiness();
   const { debts } = state;
-
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Oldest due date first by default
@@ -71,7 +48,6 @@ const DebtDisplay = () => {
 
   const filteredDebts = useMemo(() => {
     let currentDebts = processedDebts;
-
     if (searchTerm) {
       currentDebts = currentDebts.filter(debt =>
         debt.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,7 +55,6 @@ const DebtDisplay = () => {
         debt.phone.includes(searchTerm)
       );
     }
-
     // Sort debts
     currentDebts.sort((a, b) => {
       let comparison = 0;
@@ -98,7 +73,6 @@ const DebtDisplay = () => {
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-
     return currentDebts;
   }, [processedDebts, searchTerm, sortKey, sortOrder]);
 
@@ -115,7 +89,11 @@ const DebtDisplay = () => {
     try {
       dispatch({
         type: 'MARK_DEBT_PAID',
-        payload: { id: debtId, datePaid: format(new Date(), 'yyyy-MM-dd'), paidAmount: debts.find(d => d.id === debtId)?.originalAmount || 0 },
+        payload: {
+          id: debtId,
+          datePaid: format(new Date(), 'yyyy-MM-dd'),
+          paidAmount: debts.find(d => d.id === debtId)?.originalAmount || 0
+        },
       });
       showSuccess('Debt marked as paid!');
     } catch (error) {
@@ -125,7 +103,7 @@ const DebtDisplay = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = [
+    const headers: ColumnHeader<Debt>[] = [
       { key: 'customerName', label: 'Customer Name' },
       { key: 'phone', label: 'Phone' },
       { key: 'itemsSold', label: 'Items Sold' },
@@ -143,28 +121,34 @@ const DebtDisplay = () => {
   const renderDebtTable = (debtsToRender: Debt[], title: string, icon: React.ElementType, statusColor: string) => (
     <div className="mb-8">
       <h3 className={cn("text-xl font-semibold mb-4 flex items-center", statusColor)}>
-        {React.createElement(icon, { className: "mr-2 h-5 w-5" })} {title} ({formatNaira(calculateTotalOutstandingDebts(debtsToRender))})
+        {React.createElement(icon, { className: "mr-2 h-5 w-5" })}
+        {title} ({formatNaira(calculateTotalOutstandingDebts(debtsToRender))})
       </h3>
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="cursor-pointer" onClick={() => handleSort('customerName')}>
-                Customer {sortKey === 'customerName' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                Customer
+                {sortKey === 'customerName' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
               </TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Items</TableHead>
               <TableHead className="text-right cursor-pointer" onClick={() => handleSort('originalAmount')}>
-                Original Amt {sortKey === 'originalAmount' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                Original Amt
+                {sortKey === 'originalAmount' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
               </TableHead>
               <TableHead className="text-right cursor-pointer" onClick={() => handleSort('amountOwed')}>
-                Amt Owed {sortKey === 'amountOwed' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                Amt Owed
+                {sortKey === 'amountOwed' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort('dateGiven')}>
-                Given {sortKey === 'dateGiven' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                Given
+                {sortKey === 'dateGiven' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
               </TableHead>
               <TableHead className="cursor-pointer" onClick={() => handleSort('dueDate')}>
-                Due {sortKey === 'dueDate' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
+                Due
+                {sortKey === 'dueDate' && <ArrowUpDown className={cn("ml-1 inline-block h-4 w-4", sortOrder === 'asc' ? 'rotate-180' : '')} />}
               </TableHead>
               <TableHead className="text-center">Actions</TableHead>
             </TableRow>
@@ -189,8 +173,9 @@ const DebtDisplay = () => {
                     {debt.status !== 'paid' && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="success" size="sm">
-                            <CheckCircle className="h-4 w-4 mr-1" /> Mark Paid
+                          <Button variant="outline" size="sm">
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Mark Paid
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -211,7 +196,8 @@ const DebtDisplay = () => {
                     )}
                     {debt.status === 'paid' && (
                       <span className="text-success text-sm font-medium flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 mr-1" /> Paid
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Paid
                       </span>
                     )}
                   </TableCell>
@@ -262,15 +248,14 @@ const DebtDisplay = () => {
               />
             </div>
             <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto">
-              <FileText className="mr-2 h-4 w-4" /> Export to CSV
+              <FileText className="mr-2 h-4 w-4" />
+              Export to CSV
             </Button>
           </div>
-
           {renderDebtTable(overdueDebts, 'Overdue Debts', XCircle, 'text-destructive')}
           {renderDebtTable(debtsDueSoon, 'Debts Due Soon', Clock, 'text-warning')}
           {renderDebtTable(activeDebts, 'Active Debts', AlertCircle, 'text-primary')}
           {renderDebtTable(paidDebts, 'Paid Debts', CheckCircle, 'text-success')}
-
         </CardContent>
       </Card>
     </div>

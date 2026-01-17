@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isWithinInterval, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,26 +10,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira } from '@/lib/utils';
-import { calculateTotalExpenses, filterExpensesByPeriod, groupExpensesByCategory } from '@/utils/expenseCalculations';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { calculateTotalExpenses, groupExpensesByCategory } from '@/utils/expenseCalculations';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select';
+import type { DateRange } from "react-day-picker";
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month' | 'Custom';
 
 const ExpensesByCategoryReport = () => {
   const { state } = useBusiness();
   const { expenses } = state;
-
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('This Month');
-  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const handlePeriodChange = (period: FilterPeriod) => {
     setFilterPeriod(period);
@@ -41,7 +32,7 @@ const ExpensesByCategoryReport = () => {
     } else if (period === 'This Month') {
       setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
     } else if (period === 'All') {
-      setDateRange({}); // Clear custom range
+      setDateRange(undefined); // Clear custom range
     }
   };
 
@@ -49,7 +40,37 @@ const ExpensesByCategoryReport = () => {
     if (filterPeriod === 'All') {
       return expenses;
     }
-    return filterExpensesByPeriod(expenses, filterPeriod, dateRange.from, dateRange.to);
+    
+    if (filterPeriod === 'Custom' && dateRange?.from && dateRange?.to) {
+      return expenses.filter(expense => {
+        const expenseDate = parseISO(expense.date);
+        return isWithinInterval(expenseDate, { start: dateRange.from!, end: dateRange.to! });
+      });
+    }
+    
+    // For predefined periods, we need to filter manually
+    const today = new Date();
+    switch (filterPeriod) {
+      case 'Today':
+        const todayStr = format(today, 'yyyy-MM-dd');
+        return expenses.filter(expense => expense.date === todayStr);
+      case 'This Week':
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return expenses.filter(expense => {
+          const expenseDate = parseISO(expense.date);
+          return isWithinInterval(expenseDate, { start: weekStart, end: weekEnd });
+        });
+      case 'This Month':
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return expenses.filter(expense => {
+          const expenseDate = parseISO(expense.date);
+          return isWithinInterval(expenseDate, { start: monthStart, end: monthEnd });
+        });
+      default:
+        return expenses;
+    }
   }, [expenses, filterPeriod, dateRange]);
 
   const totalExpenses = useMemo(() => calculateTotalExpenses(filteredExpenses), [filteredExpenses]);
@@ -82,11 +103,11 @@ const ExpensesByCategoryReport = () => {
                     variant={'outline'}
                     className={cn(
                       'w-[240px] justify-start text-left font-normal',
-                      !dateRange.from && 'text-muted-foreground'
+                      !dateRange?.from && 'text-muted-foreground'
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateRange.from ? (
+                    {dateRange?.from ? (
                       dateRange.to ? (
                         <>
                           {format(dateRange.from, 'LLL dd, y')} -{' '}
@@ -119,9 +140,7 @@ const ExpensesByCategoryReport = () => {
           <h3 className="text-lg font-semibold">Total Expenses for Period</h3>
           <p className="text-3xl font-bold text-destructive">{formatNaira(totalExpenses)}</p>
         </div>
-
         <Separator />
-
         <div>
           <h3 className="text-xl font-semibold mb-3">Breakdown by Category</h3>
           {totalExpenses > 0 ? (
