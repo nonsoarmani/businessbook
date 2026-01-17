@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useBusiness } from '@/state/businessStore';
 import { showSuccess, showError } from '@/utils/toast';
-import { BusinessSettings } from '@/types';
 
 const businessSettingsSchema = z.object({
   businessName: z.string().min(1, { message: 'Business name is required.' }),
@@ -23,27 +22,37 @@ type BusinessSettingsFormValues = z.infer<typeof businessSettingsSchema>;
 
 const BusinessSettingsForm = () => {
   const { state, dispatch } = useBusiness();
-  const { settings } = state;
+  
+  // Provide fallback values in case settings is undefined
+  const settings = state.settings || {
+    businessName: 'BusinessBook',
+    businessEmail: 'info@businessbook.com',
+    businessPhone: '+234 800 123 4567',
+    businessAddress: '123 Business Street, City, State',
+    businessLogoUrl: '',
+  };
+
   const form = useForm<BusinessSettingsFormValues>({
     resolver: zodResolver(businessSettingsSchema),
     defaultValues: {
-      businessName: settings.businessName,
-      businessEmail: settings.businessEmail,
-      businessPhone: settings.businessPhone,
-      businessAddress: settings.businessAddress,
+      businessName: settings.businessName || '',
+      businessEmail: settings.businessEmail || '',
+      businessPhone: settings.businessPhone || '',
+      businessAddress: settings.businessAddress || '',
       businessLogoUrl: settings.businessLogoUrl || '',
     },
   });
 
   const onSubmit = (values: BusinessSettingsFormValues) => {
     try {
-      const updatedSettings: BusinessSettings = {
+      const updatedSettings = {
         businessName: values.businessName,
         businessEmail: values.businessEmail,
         businessPhone: values.businessPhone,
         businessAddress: values.businessAddress,
         businessLogoUrl: values.businessLogoUrl || undefined,
       };
+      
       dispatch({ type: 'UPDATE_SETTINGS', payload: updatedSettings });
       showSuccess('Business settings updated successfully!');
     } catch (error) {

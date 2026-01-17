@@ -11,7 +11,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useBusiness } from '@/state/businessStore';
 import { showSuccess, showError } from '@/utils/toast';
 import { generateUniqueId } from '@/lib/utils';
-import { Customer } from '@/types';
 
 const customerFormSchema = z.object({
   name: z.string().min(1, { message: 'Customer name is required.' }),
@@ -36,7 +35,7 @@ const CustomerForm = () => {
 
   const onSubmit = (values: CustomerFormValues) => {
     try {
-      const newCustomer: Customer = {
+      const newCustomer = {
         id: generateUniqueId(),
         name: values.name,
         phone: values.phone,
