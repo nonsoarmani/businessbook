@@ -10,7 +10,7 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns';
 
 const FinancialDashboard = () => {
   const { state } = useBusiness();
-  const { sales, expenses, inventory } = state;
+  const { sales = [], expenses = [], inventory = [] } = state;
 
   // Calculate monthly data for the last 6 months
   const monthlyData = useMemo(() => {
@@ -75,7 +75,6 @@ const FinancialDashboard = () => {
             </p>
           </CardContent>
         </Card>
-        
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Total Expenses (6 Months)</CardTitle>
@@ -86,7 +85,6 @@ const FinancialDashboard = () => {
             </p>
           </CardContent>
         </Card>
-        
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Net Profit (6 Months)</CardTitle>
@@ -98,7 +96,7 @@ const FinancialDashboard = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -122,7 +120,6 @@ const FinancialDashboard = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardHeader>
             <CardTitle>Expense Breakdown</CardTitle>
