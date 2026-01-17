@@ -1,8 +1,9 @@
 "use client";
-
 import React, { createContext, useReducer, useContext, ReactNode } from 'react';
-import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings } from '@/types';
-import useLocalStorage from '@/hooks/useLocalStorage'; // Import the useLocalStorage hook
+import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer } from '@/types';
+import useLocalStorage from '@/hooks/useLocalStorage';
+
+// Import the useLocalStorage hook
 
 const initialSettings: BusinessSettings = {
   businessName: 'BusinessBook',
@@ -17,13 +18,17 @@ const initialState: BusinessState = {
   expenses: [],
   debts: [],
   receipts: [],
-  settings: initialSettings, // Initialize with default settings
+  customers: [], // Initialize empty customers array
+  settings: initialSettings,
 };
 
 const businessReducer = (state: BusinessState, action: BusinessAction): BusinessState => {
   switch (action.type) {
     case 'ADD_SALE':
-      return { ...state, sales: [...state.sales, action.payload] };
+      return {
+        ...state,
+        sales: [...state.sales, action.payload],
+      };
     case 'UPDATE_SALE':
       return {
         ...state,
@@ -37,7 +42,10 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         sales: state.sales.filter((sale) => sale.id !== action.payload),
       };
     case 'ADD_EXPENSE':
-      return { ...state, expenses: [...state.expenses, action.payload] };
+      return {
+        ...state,
+        expenses: [...state.expenses, action.payload],
+      };
     case 'UPDATE_EXPENSE':
       return {
         ...state,
@@ -51,7 +59,10 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         expenses: state.expenses.filter((expense) => expense.id !== action.payload),
       };
     case 'ADD_DEBT':
-      return { ...state, debts: [...state.debts, action.payload] };
+      return {
+        ...state,
+        debts: [...state.debts, action.payload],
+      };
     case 'UPDATE_DEBT':
       return {
         ...state,
@@ -69,14 +80,45 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         ...state,
         debts: state.debts.map((debt) =>
           debt.id === action.payload.id
-            ? { ...debt, status: 'paid', datePaid: action.payload.datePaid, paidAmount: debt.originalAmount }
+            ? {
+                ...debt,
+                status: 'paid',
+                datePaid: action.payload.datePaid,
+                paidAmount: debt.originalAmount,
+              }
             : debt
         ),
       };
     case 'ADD_RECEIPT':
-      return { ...state, receipts: [...state.receipts, action.payload] };
+      return {
+        ...state,
+        receipts: [...state.receipts, action.payload],
+      };
     case 'UPDATE_SETTINGS':
-      return { ...state, settings: { ...state.settings, ...action.payload } }; // Update specific settings
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          ...action.payload,
+        },
+      };
+    case 'ADD_CUSTOMER': // New customer actions
+      return {
+        ...state,
+        customers: [...state.customers, action.payload],
+      };
+    case 'UPDATE_CUSTOMER':
+      return {
+        ...state,
+        customers: state.customers.map((customer) =>
+          customer.id === action.payload.id ? action.payload : customer
+        ),
+      };
+    case 'DELETE_CUSTOMER':
+      return {
+        ...state,
+        customers: state.customers.filter((customer) => customer.id !== action.payload),
+      };
     case 'CLEAR_ALL_DATA':
       return initialState;
     default:

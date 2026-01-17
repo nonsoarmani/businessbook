@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { formatNaira } from '@/lib/utils';
@@ -7,37 +6,28 @@ import { calculateTotalSales, getSalesForDay } from '@/utils/salesCalculations';
 import { calculateTotalExpenses, getExpensesForDay } from '@/utils/expenseCalculations';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { PlusCircle, ShoppingCart, Wallet, Handshake, Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { PlusCircle, ShoppingCart, Wallet, Handshake, Users, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { showSuccess, showError } from '@/utils/toast';
 
 const Dashboard = () => {
   const { state, dispatch } = useBusiness();
-  const { sales, expenses, debts } = state;
-
+  const { sales, expenses, debts, customers } = state;
   const today = new Date();
-
+  
   const todaySalesData = useMemo(() => getSalesForDay(sales, today), [sales, today]);
   const totalTodaySales = useMemo(() => calculateTotalSales(todaySalesData), [todaySalesData]);
-
+  
   const todayExpensesData = useMemo(() => getExpensesForDay(expenses, today), [expenses, today]);
   const totalTodayExpenses = useMemo(() => calculateTotalExpenses(todayExpensesData), [todayExpensesData]);
-
+  
   const todayProfitLoss = totalTodaySales - totalTodayExpenses;
-
+  
   const totalOutstandingDebts = useMemo(() => {
     return debts.filter(debt => debt.status !== 'paid').reduce((sum, debt) => sum + debt.amountOwed, 0);
   }, [debts]);
+  
+  const totalCustomers = useMemo(() => customers.length, [customers]);
 
   const handleClearAllData = () => {
     try {
@@ -53,8 +43,9 @@ const Dashboard = () => {
     <div className="p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
       <p className="text-muted-foreground">Welcome to BusinessBook! Your business overview will appear here.</p>
+      
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         <div className="bg-card p-4 rounded-lg shadow-sm">
           <h2 className="text-lg font-semibold">Today's Sales</h2>
           <p className="text-3xl font-bold text-primary">{formatNaira(totalTodaySales)}</p>
@@ -70,10 +61,11 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold">Outstanding Debts</h2>
-          <p className="text-3xl font-bold text-warning">{formatNaira(totalOutstandingDebts)}</p>
+          <h2 className="text-lg font-semibold">Total Customers</h2>
+          <p className="text-3xl font-bold text-primary">{totalCustomers}</p>
         </div>
       </div>
+      
       {/* Quick Actions */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
@@ -91,6 +83,11 @@ const Dashboard = () => {
           <Button asChild variant="outline">
             <Link to="/debts">
               <PlusCircle className="mr-2 h-4 w-4" /> Record Debt
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/customers">
+              <Users className="mr-2 h-4 w-4" /> Manage Customers
             </Link>
           </Button>
           <AlertDialog>
@@ -116,6 +113,7 @@ const Dashboard = () => {
           </AlertDialog>
         </div>
       </div>
+      
       {/* Recent Activity */}
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>

@@ -43,6 +43,15 @@ export interface Receipt {
   linkedSaleId?: string; // If generated from a sale
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  location?: string;
+  email?: string;
+  dateAdded: string; // YYYY-MM-DD
+}
+
 export interface BusinessSettings {
   businessName: string;
   businessEmail: string;
@@ -56,7 +65,8 @@ export interface BusinessState {
   expenses: Expense[];
   debts: Debt[];
   receipts: Receipt[];
-  settings: BusinessSettings; // New settings field
+  customers: Customer[]; // New customers array
+  settings: BusinessSettings;
 }
 
 export type BusinessAction =
@@ -71,5 +81,8 @@ export type BusinessAction =
   | { type: 'DELETE_DEBT'; payload: string }
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: string; paidAmount: number } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
-  | { type: 'UPDATE_SETTINGS'; payload: BusinessSettings } // New action type
+  | { type: 'UPDATE_SETTINGS'; payload: BusinessSettings }
+  | { type: 'ADD_CUSTOMER'; payload: Customer } // New action types
+  | { type: 'UPDATE_CUSTOMER'; payload: Customer }
+  | { type: 'DELETE_CUSTOMER'; payload: string }
   | { type: 'CLEAR_ALL_DATA' };

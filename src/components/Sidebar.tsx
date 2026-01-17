@@ -1,10 +1,9 @@
 "use client";
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { LayoutDashboard, ShoppingCart, Wallet, Handshake, ReceiptText, BarChart, Banknote, Settings, X } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Wallet, Handshake, ReceiptText, BarChart, Banknote, Settings, Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -19,31 +18,38 @@ const navItems = [
   { name: 'Expenses', icon: Wallet, path: '/expenses' },
   { name: 'Debts', icon: Handshake, path: '/debts' },
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
+  { name: 'Customers', icon: Users, path: '/customers' }, // New customers page
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
-  { name: 'Settings', icon: Settings, path: '/settings' }, // New settings item
+  { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className={cn(
-      "flex h-full flex-col border-r bg-sidebar transition-all duration-300",
-      isCollapsed ? "w-[60px]" : "w-[240px]",
-      isMobile && !isCollapsed ? "w-[240px]" : "w-0 lg:w-[240px]"
-    )}>
+    <div
+      className={cn(
+        "flex h-full flex-col border-r bg-sidebar transition-all duration-300",
+        isCollapsed ? "w-[60px]" : "w-[240px]",
+        isMobile && !isCollapsed ? "w-[240px]" : "w-0 lg:w-[240px]"
+      )}
+    >
       <div className="flex h-16 items-center justify-between border-b px-4">
-        <h1 className={cn(
-          "font-bold text-lg text-sidebar-primary transition-opacity duration-300",
-          isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-        )}>
+        <h1
+          className={cn(
+            "font-bold text-lg text-sidebar-primary transition-opacity duration-300",
+            isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+          )}
+        >
           BusinessBook
         </h1>
-        <LayoutDashboard className={cn(
-          "text-sidebar-primary transition-opacity duration-300",
-          isCollapsed ? "opacity-100 w-6 h-6" : "opacity-0 w-0 h-0"
-        )} />
+        <LayoutDashboard
+          className={cn(
+            "text-sidebar-primary transition-opacity duration-300",
+            isCollapsed ? "opacity-100 w-6 h-6" : "opacity-0 w-0 h-0"
+          )}
+        />
         {isMobile && !isCollapsed && (
           <Button variant="ghost" size="icon" onClick={onToggle} className="lg:hidden">
             <X className="h-5 w-5 text-sidebar-foreground" />
@@ -66,10 +72,12 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
               }
             >
               <item.icon className="h-5 w-5" />
-              <span className={cn(
-                "transition-opacity duration-300",
-                isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-              )}>
+              <span
+                className={cn(
+                  "transition-opacity duration-300",
+                  isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                )}
+              >
                 {item.name}
               </span>
             </NavLink>
