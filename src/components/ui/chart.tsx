@@ -114,23 +114,35 @@ const ChartTooltipContent = React.forwardRef<
     }
 >(
   (
-    {
-      active,
-      payload,
-      className,
-      indicator = "dot",
-      hideLabel = false,
-      hideIndicator = false,
-      label,
-      labelFormatter,
+    props,
+    ref
+  ) => {
+    const tooltipProps = props as React.ComponentProps<typeof RechartsPrimitive.Tooltip> & 
+        React.ComponentProps<"div"> & {
+          hideLabel?: boolean;
+          hideIndicator?: boolean;
+          indicator?: "line" | "dot" | "dashed";
+          nameKey?: string;
+          labelKey?: string;
+        };
+    
+    const { 
+      active, 
+      payload, 
+      className, 
+      indicator = "dot", 
+      hideLabel = false, 
+      hideIndicator = false, 
+      label, 
+      labelFormatter, 
       labelClassName,
       formatter,
       color,
       nameKey,
       labelKey,
-    },
-    ref
-  ) => {
+      ...restProps
+    } = tooltipProps;
+    
     const { config } = useChart();
 
     const tooltipLabelContent = React.useMemo(() => {
@@ -182,6 +194,7 @@ const ChartTooltipContent = React.forwardRef<
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
           className
         )}
+        {...restProps}
       >
         {!nestLabel ? tooltipLabelContent : null}
         <div className="grid gap-1.5">
@@ -259,11 +272,12 @@ const ChartLegend = RechartsPrimitive.Legend;
 
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean;
-      nameKey?: string;
-    }
+  React.ComponentProps<"div"> & {
+    payload?: RechartsPrimitive.LegendPayload[];
+    verticalAlign?: "top" | "middle" | "bottom";
+    hideIcon?: boolean;
+    nameKey?: string;
+  }
 >(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
