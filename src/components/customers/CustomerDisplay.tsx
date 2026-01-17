@@ -12,13 +12,13 @@ import { Customer } from '@/types';
 
 const CustomerDisplay = () => {
   const { state } = useBusiness();
-  const customers = state.customers || [];
+  const { customers } = state;
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCustomers = useMemo(() => {
-    if (!searchTerm) return customers;
+    if (!searchTerm) return customers || [];
     
-    return customers.filter(customer => 
+    return (customers || []).filter(customer => 
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm) ||
       (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -35,7 +35,7 @@ const CustomerDisplay = () => {
       { key: 'dateAdded', label: 'Date Added' },
     ];
     
-    exportToCSV('customer_contacts', customers, headers);
+    exportToCSV('customer_contacts', customers || [], headers);
   };
 
   return (
@@ -73,7 +73,7 @@ const CustomerDisplay = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.length > 0 ? (
+                {filteredCustomers && filteredCustomers.length > 0 ? (
                   filteredCustomers.map((customer) => (
                     <TableRow key={customer.id}>
                       <TableCell className="font-medium">{customer.name}</TableCell>

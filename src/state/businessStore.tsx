@@ -18,7 +18,7 @@ const initialState: BusinessState = {
   expenses: [],
   debts: [],
   receipts: [],
-  customers: [], // Initialize empty customers array
+  customers: [],
   settings: initialSettings,
 };
 
@@ -102,7 +102,7 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
           ...action.payload,
         },
       };
-    case 'ADD_CUSTOMER': // New customer actions
+    case 'ADD_CUSTOMER':
       return {
         ...state,
         customers: [...state.customers, action.payload],
@@ -135,7 +135,11 @@ const BusinessContext = createContext<BusinessContextType | undefined>(undefined
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
   // Use useLocalStorage to persist the state
-  const [persistedState, setPersistedState] = useLocalStorage<BusinessState>('businessBookState', initialState);
+  const [persistedState, setPersistedState] = useLocalStorage<BusinessState>(
+    'businessBookState',
+    initialState
+  );
+  
   const [state, dispatch] = useReducer(businessReducer, persistedState);
 
   // Update local storage whenever the state changes
