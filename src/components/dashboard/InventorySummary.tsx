@@ -7,7 +7,7 @@ import { formatNaira } from '@/lib/utils';
 
 const InventorySummary = () => {
   const { state } = useBusiness();
-  const { inventory } = state;
+  const { inventory = [] } = state;
 
   const inventoryStats = useMemo(() => {
     const totalItems = inventory.length;
