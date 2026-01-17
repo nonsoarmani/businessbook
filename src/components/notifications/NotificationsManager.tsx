@@ -20,7 +20,7 @@ interface Notification {
 
 const NotificationsManager = () => {
   const { state } = useBusiness();
-  const { debts, inventory } = state;
+  const { debts = [], inventory = [] } = state;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -29,58 +29,66 @@ const NotificationsManager = () => {
     const newNotifications: Notification[] = [];
     
     // Debt notifications
-    debts.forEach(debt => {
-      const dueDate = parseISO(debt.dueDate);
-      
-      if (debt.status !== 'paid') {
-        if (isToday(dueDate)) {
+    if (debts && Array.isArray(debts)) {
+      debts.forEach(debt => {
+        if (debt.status !== 'paid' && debt.dueDate) {
+          try {
+            const dueDate = parseISO(debt.dueDate);
+            if (isToday(dueDate)) {
+              newNotifications.push({
+                id: `debt-today-${debt.id}`,
+                type: 'debt',
+                title: 'Debt Due Today',
+                message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is due today`,
+                date: debt.dueDate,
+                read: false,
+                priority: 'high'
+              });
+            } else if (isTomorrow(dueDate)) {
+              newNotifications.push({
+                id: `debt-tomorrow-${debt.id}`,
+                type: 'debt',
+                title: 'Debt Due Tomorrow',
+                message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is due tomorrow`,
+                date: debt.dueDate,
+                read: false,
+                priority: 'medium'
+              });
+            } else if (isPast(dueDate)) {
+              newNotifications.push({
+                id: `debt-overdue-${debt.id}`,
+                type: 'debt',
+                title: 'Overdue Debt',
+                message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is overdue`,
+                date: debt.dueDate,
+                read: false,
+                priority: 'high'
+              });
+            }
+          } catch (e) {
+            console.warn('Invalid date format for debt:', debt.dueDate);
+          }
+        }
+      });
+    }
+    
+    // Inventory notifications
+    if (inventory && Array.isArray(inventory)) {
+      inventory.forEach(item => {
+        if (item.quantity !== undefined && item.lowStockThreshold !== undefined && 
+            item.quantity <= item.lowStockThreshold) {
           newNotifications.push({
-            id: `debt-today-${debt.id}`,
-            type: 'debt',
-            title: 'Debt Due Today',
-            message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is due today`,
-            date: debt.dueDate,
-            read: false,
-            priority: 'high'
-          });
-        } else if (isTomorrow(dueDate)) {
-          newNotifications.push({
-            id: `debt-tomorrow-${debt.id}`,
-            type: 'debt',
-            title: 'Debt Due Tomorrow',
-            message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is due tomorrow`,
-            date: debt.dueDate,
-            read: false,
-            priority: 'medium'
-          });
-        } else if (isPast(dueDate)) {
-          newNotifications.push({
-            id: `debt-overdue-${debt.id}`,
-            type: 'debt',
-            title: 'Overdue Debt',
-            message: `Payment of ₦${debt.amountOwed.toLocaleString()} from ${debt.customerName} is overdue`,
-            date: debt.dueDate,
+            id: `inventory-low-${item.id}`,
+            type: 'inventory',
+            title: 'Low Stock Alert',
+            message: `Item "${item.name}" is running low. Only ${item.quantity} ${item.unit} left in stock`,
+            date: item.lastUpdated,
             read: false,
             priority: 'high'
           });
         }
-      }
-    });
-    
-    // Inventory notifications
-    inventory.forEach(item => {
-      if (item.quantity <= (item.lowStockThreshold || 0)) {
-        newNotifications.push({
-          id: `inventory-low-${item.id}`,
-          type: 'inventory',
-          title: 'Low Stock Alert',
-          message: `Item "${item.name}" is running low. Only ${item.quantity} ${item.unit} left in stock`,
-          date: item.lastUpdated,
-          read: false,
-          priority: 'high'
-        });
-      }
-    });
+      });
+    }
     
     setNotifications(newNotifications);
   }, [debts, inventory]);
@@ -105,10 +113,10 @@ const NotificationsManager = () => {
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Switch
-              id="notifications"
-              checked={notificationsEnabled}
-              onCheckedChange={setNotificationsEnabled}
+            <Switch 
+              id="notifications" 
+              checked={notificationsEnabled} 
+              onCheckedChange={setNotificationsEnabled} 
             />
             <Label htmlFor="notifications">Enable Notifications</Label>
           </div>
@@ -130,7 +138,7 @@ const NotificationsManager = () => {
             <div className="space-y-3">
               {notifications.map(notification => (
                 <div 
-                  key={notification.id}
+                  key={notification.id} 
                   className={`p-4 rounded-lg border ${
                     notification.read 
                       ? 'bg-muted/40' 
@@ -141,7 +149,9 @@ const NotificationsManager = () => {
                     <div className="flex items-start space-x-3">
                       {notification.type === 'debt' && (
                         <AlertCircle className={`h-5 w-5 mt-0.5 ${
-                          notification.priority === 'high' ? 'text-destructive' : 'text-warning'
+                          notification.priority === 'high' 
+                            ? 'text-destructive' 
+                            : 'text-warning'
                         }`} />
                       )}
                       {notification.type === 'inventory' && (
@@ -159,7 +169,7 @@ const NotificationsManager = () => {
                     {!notification.read && (
                       <Button 
                         variant="ghost" 
-                        size="sm"
+                        size="sm" 
                         onClick={() => markAsRead(notification.id)}
                       >
                         Mark as read
@@ -172,7 +182,9 @@ const NotificationsManager = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>No notifications at this time.</p>
-              <p className="text-sm mt-2">Notifications will appear when you have upcoming debts or low inventory.</p>
+              <p className="text-sm mt-2">
+                Notifications will appear when you have upcoming debts or low inventory.
+              </p>
             </div>
           )}
         </div>
