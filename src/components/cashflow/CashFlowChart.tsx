@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useBusiness } from '@/state/businessStore';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, subMonths, addMonths, subWeeks, addWeeks, parseISO } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
