@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useReducer, useContext, ReactNode } from 'react';
-import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer } from '@/types';
+import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer, InventoryItem } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 
 // Import the useLocalStorage hook
@@ -19,6 +19,7 @@ const initialState: BusinessState = {
   debts: [],
   receipts: [],
   customers: [],
+  inventory: [],
   settings: initialSettings,
 };
 
@@ -118,6 +119,32 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       return {
         ...state,
         customers: state.customers.filter((customer) => customer.id !== action.payload),
+      };
+    case 'ADD_INVENTORY_ITEM':
+      return {
+        ...state,
+        inventory: [...state.inventory, action.payload],
+      };
+    case 'UPDATE_INVENTORY_ITEM':
+      return {
+        ...state,
+        inventory: state.inventory.map((item) =>
+          item.id === action.payload.id ? action.payload : item
+        ),
+      };
+    case 'DELETE_INVENTORY_ITEM':
+      return {
+        ...state,
+        inventory: state.inventory.filter((item) => item.id !== action.payload),
+      };
+    case 'UPDATE_INVENTORY_QUANTITY':
+      return {
+        ...state,
+        inventory: state.inventory.map((item) =>
+          item.id === action.payload.id
+            ? { ...item, quantity: item.quantity + action.payload.quantity, lastUpdated: action.payload.lastUpdated }
+            : item
+        ),
       };
     case 'CLEAR_ALL_DATA':
       return initialState;

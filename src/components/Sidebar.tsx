@@ -13,6 +13,7 @@ import {
   Banknote, 
   Settings, 
   Users, 
+  Box,
   X 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,6 +28,7 @@ const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
   { name: 'Sales', icon: ShoppingCart, path: '/sales' },
   { name: 'Expenses', icon: Wallet, path: '/expenses' },
+  { name: 'Inventory', icon: Box, path: '/inventory' },
   { name: 'Debts', icon: Handshake, path: '/debts' },
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
   { name: 'Customers', icon: Users, path: '/customers' },

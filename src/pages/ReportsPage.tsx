@@ -7,6 +7,7 @@ import MonthlySummary from '@/components/reports/MonthlySummary';
 import DebtReport from '@/components/reports/DebtReport';
 import SalesByPaymentMethodReport from '@/components/reports/SalesByPaymentMethodReport';
 import ExpensesByCategoryReport from '@/components/reports/ExpensesByCategoryReport';
+import FinancialDashboard from '@/components/reports/FinancialDashboard';
 
 const ReportsPage = () => {
   return (
@@ -14,8 +15,9 @@ const ReportsPage = () => {
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Business Reports</h1>
       <p className="text-muted-foreground mb-6">View daily, weekly, and monthly summaries of your business performance, along with other key reports.</p>
       
-      <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto gap-1">
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto gap-1">
+          <TabsTrigger value="dashboard" className="text-xs md:text-sm">Dashboard</TabsTrigger>
           <TabsTrigger value="daily" className="text-xs md:text-sm">Daily</TabsTrigger>
           <TabsTrigger value="weekly" className="text-xs md:text-sm">Weekly</TabsTrigger>
           <TabsTrigger value="monthly" className="text-xs md:text-sm">Monthly</TabsTrigger>
@@ -34,6 +36,9 @@ const ReportsPage = () => {
           </TabsList>
         </div>
         
+        <TabsContent value="dashboard" className="mt-6">
+          <FinancialDashboard />
+        </TabsContent>
         <TabsContent value="daily" className="mt-6">
           <DailySummary />
         </TabsContent>

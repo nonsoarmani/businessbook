@@ -5,8 +5,8 @@ export interface Sale {
   amount: number;
   paymentMethod: 'Cash' | 'Transfer' | 'POS' | 'Credit';
   note?: string;
-  customerName?: string; // For credit sales
-  customerPhone?: string; // For credit sales
+  customerName?: string;
+  customerPhone?: string;
 }
 
 export interface Expense {
@@ -60,13 +60,31 @@ export interface BusinessSettings {
   businessLogoUrl?: string;
 }
 
+// New Inventory interface
+export interface InventoryItem {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  unit: string; // e.g., 'pieces', 'kg', 'liters'
+  costPrice: number;
+  sellingPrice: number;
+  dateAdded: string; // YYYY-MM-DD
+  lastUpdated: string; // YYYY-MM-DD
+  lowStockThreshold?: number;
+  supplier?: string;
+  notes?: string;
+}
+
 export interface BusinessState {
   sales: Sale[];
   expenses: Expense[];
   debts: Debt[];
   receipts: Receipt[];
-  customers: Customer[]; // New customers array
+  customers: Customer[];
   settings: BusinessSettings;
+  // New inventory array
+  inventory: InventoryItem[];
 }
 
 export type BusinessAction =
@@ -82,7 +100,12 @@ export type BusinessAction =
   | { type: 'MARK_DEBT_PAID'; payload: { id: string; datePaid: string; paidAmount: number } }
   | { type: 'ADD_RECEIPT'; payload: Receipt }
   | { type: 'UPDATE_SETTINGS'; payload: BusinessSettings }
-  | { type: 'ADD_CUSTOMER'; payload: Customer } // New action types
+  | { type: 'ADD_CUSTOMER'; payload: Customer }
   | { type: 'UPDATE_CUSTOMER'; payload: Customer }
   | { type: 'DELETE_CUSTOMER'; payload: string }
-  | { type: 'CLEAR_ALL_DATA' };
+  | { type: 'CLEAR_ALL_DATA' }
+  // New inventory actions
+  | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }
+  | { type: 'UPDATE_INVENTORY_ITEM'; payload: InventoryItem }
+  | { type: 'DELETE_INVENTORY_ITEM'; payload: string }
+  | { type: 'UPDATE_INVENTORY_QUANTITY'; payload: { id: string; quantity: number; lastUpdated: string } };
