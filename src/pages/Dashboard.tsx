@@ -12,7 +12,7 @@ import { showSuccess, showError } from '@/utils/toast';
 
 const Dashboard = () => {
   const { state, dispatch } = useBusiness();
-  const { sales, expenses, debts, customers } = state;
+  const { sales = [], expenses = [], debts = [], customers = [] } = state;
   const today = new Date();
   
   const todaySalesData = useMemo(() => getSalesForDay(sales, today), [sales, today]);
