@@ -15,7 +15,7 @@ const Layout = () => {
   const isMobile = useIsMobile();
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(!isMobile);
   const { state } = useBusiness();
-  const { debts, inventory } = state;
+  const { debts = [], inventory = [] } = state;
 
   // Calculate notification count
   const notificationCount = React.useMemo(() => {
@@ -23,17 +23,22 @@ const Layout = () => {
     
     // Debt notifications
     debts.forEach(debt => {
-      if (debt.status !== 'paid') {
-        const dueDate = parseISO(debt.dueDate);
-        if (isToday(dueDate) || isTomorrow(dueDate) || isPast(dueDate)) {
-          count++;
+      if (debt.status !== 'paid' && debt.dueDate) {
+        try {
+          const dueDate = parseISO(debt.dueDate);
+          if (isToday(dueDate) || isTomorrow(dueDate) || isPast(dueDate)) {
+            count++;
+          }
+        } catch (e) {
+          console.warn('Invalid date format for debt:', debt.dueDate);
         }
       }
     });
     
     // Inventory notifications
     inventory.forEach(item => {
-      if (item.quantity <= (item.lowStockThreshold || 0)) {
+      if (item.quantity !== undefined && item.lowStockThreshold !== undefined && 
+          item.quantity <= item.lowStockThreshold) {
         count++;
       }
     });
