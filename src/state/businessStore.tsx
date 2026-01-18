@@ -19,7 +19,7 @@ const initialState: BusinessState = {
   debts: [],
   receipts: [],
   customers: [],
-  tasks: [],
+  tasks: [], // Ensure tasks is initialized as an empty array
   inventory: [],
   settings: initialSettings,
 };
@@ -185,7 +185,11 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
     initialState
   );
 
-  const [state, dispatch] = useReducer(businessReducer, persistedState);
+  // Merge persistedState with initialState to ensure all properties exist
+  // This handles cases where local storage might have an older state structure
+  const mergedState = { ...initialState, ...persistedState };
+
+  const [state, dispatch] = useReducer(businessReducer, mergedState);
 
   // Update local storage whenever the state changes
   React.useEffect(() => {
