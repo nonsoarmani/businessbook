@@ -7,16 +7,18 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
+      console.log(`[useLocalStorage] Initializing on server for key: ${key}`);
       return initialValue;
     }
     try {
       // Get from local storage by key
       const item = window.localStorage.getItem(key);
+      console.log(`[useLocalStorage] Reading from local storage for key: ${key}, item:`, item);
       // Parse stored json or if none return initialValue
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       // If error parsing, return initialValue
-      console.error("Error reading from local storage:", error);
+      console.error(`[useLocalStorage] Error reading from local storage for key: ${key}:`, error);
       return initialValue;
     }
   });
@@ -25,9 +27,10 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
+        console.log(`[useLocalStorage] Writing to local storage for key: ${key}, value:`, storedValue);
         window.localStorage.setItem(key, JSON.stringify(storedValue));
       } catch (error) {
-        console.error("Error writing to local storage:", error);
+        console.error(`[useLocalStorage] Error writing to local storage for key: ${key}:`, error);
       }
     }
   }, [key, storedValue]);
