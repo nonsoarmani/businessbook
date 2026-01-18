@@ -15,7 +15,8 @@ import {
   Users, 
   Box,
   X,
-  LogOut
+  LogOut,
+  ListTodo
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -34,6 +35,7 @@ const navItems = [
   { name: 'Debts', icon: Handshake, path: '/debts' },
   { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
   { name: 'Customers', icon: Users, path: '/customers' },
+  { name: 'Tasks', icon: ListTodo, path: '/tasks' },
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
   { name: 'Settings', icon: Settings, path: '/settings' },
@@ -56,7 +58,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
       className={cn(
         "flex h-full flex-col border-r bg-sidebar transition-all duration-300",
         isCollapsed ? "w-[60px]" : "w-[240px]",
-        isMobile && !isCollapsed ? "w-[240px]" : "w-0 lg:w-[240px]"
+        isMobile && isCollapsed ? "w-[240px]" : "w-0 lg:w-[240px]"
       )}
     >
       <div className="flex h-16 items-center justify-between border-b px-4">

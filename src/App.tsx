@@ -14,6 +14,7 @@ import CashFlowPage from "./pages/CashFlowPage";
 import SettingsPage from "./pages/SettingsPage";
 import CustomersPage from "./pages/CustomersPage";
 import InventoryPage from "./pages/InventoryPage";
+import TasksPage from "./pages/TasksPage";
 import { BusinessProvider } from "./state/businessStore";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="/receipts" element={<ReceiptsPage />} />
               <Route path="/customers" element={<CustomersPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
+              <Route path="/tasks" element={<TasksPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/cash-flow" element={<CashFlowPage />} />
               <Route path="/settings" element={<SettingsPage />} />

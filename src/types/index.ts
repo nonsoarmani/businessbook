@@ -52,6 +52,17 @@ export interface Customer {
   dateAdded: string; // YYYY-MM-DD
 }
 
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: string; // YYYY-MM-DD
+  priority: 'low' | 'medium' | 'high';
+  status: 'todo' | 'in-progress' | 'completed';
+  createdAt: string; // YYYY-MM-DD
+  completedAt?: string; // YYYY-MM-DD
+}
+
 export interface BusinessSettings {
   businessName: string;
   businessEmail: string;
@@ -82,6 +93,7 @@ export interface BusinessState {
   debts: Debt[];
   receipts: Receipt[];
   customers: Customer[];
+  tasks: Task[];
   settings: BusinessSettings;
   // New inventory array
   inventory: InventoryItem[];
@@ -103,6 +115,9 @@ export type BusinessAction =
   | { type: 'ADD_CUSTOMER'; payload: Customer }
   | { type: 'UPDATE_CUSTOMER'; payload: Customer }
   | { type: 'DELETE_CUSTOMER'; payload: string }
+  | { type: 'ADD_TASK'; payload: Task }
+  | { type: 'UPDATE_TASK'; payload: Task }
+  | { type: 'DELETE_TASK'; payload: string }
   | { type: 'CLEAR_ALL_DATA' }
   // New inventory actions
   | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }

@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useReducer, useContext, ReactNode } from 'react';
-import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer, InventoryItem } from '@/types';
+import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer, InventoryItem, Task } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 
 // Import the useLocalStorage hook
@@ -19,6 +19,7 @@ const initialState: BusinessState = {
   debts: [],
   receipts: [],
   customers: [],
+  tasks: [],
   inventory: [],
   settings: initialSettings,
 };
@@ -119,6 +120,23 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
       return {
         ...state,
         customers: state.customers.filter((customer) => customer.id !== action.payload),
+      };
+    case 'ADD_TASK':
+      return {
+        ...state,
+        tasks: [...state.tasks, action.payload],
+      };
+    case 'UPDATE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id ? action.payload : task
+        ),
+      };
+    case 'DELETE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload),
       };
     case 'ADD_INVENTORY_ITEM':
       return {
