@@ -20,8 +20,6 @@ const TaskDisplay = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
 
-  console.log('Current tasks in state:', tasks);
-
   const filteredTasks = useMemo(() => {
     return (tasks || []).filter(task => {
       const matchesSearch = 
@@ -40,7 +38,6 @@ const TaskDisplay = () => {
 
   const handleStatusChange = (taskId: string, newStatus: 'todo' | 'in-progress' | 'completed') => {
     try {
-      console.log('Updating task status:', taskId, newStatus);
       const taskToUpdate = tasks.find(task => task.id === taskId);
       if (taskToUpdate) {
         const updatedTask = {
@@ -57,7 +54,6 @@ const TaskDisplay = () => {
 
   const handleDeleteTask = (taskId: string) => {
     try {
-      console.log('Deleting task:', taskId);
       dispatch({ type: 'DELETE_TASK', payload: taskId });
     } catch (error) {
       console.error('Failed to delete task:', error);

@@ -47,7 +47,6 @@ const TaskForm = () => {
         createdAt: format(new Date(), 'yyyy-MM-dd'),
       };
 
-      console.log('Dispatching ADD_TASK action with:', newTask);
       dispatch({ type: 'ADD_TASK', payload: newTask });
       showSuccess('Task added successfully!');
       form.reset({

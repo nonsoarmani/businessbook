@@ -25,8 +25,6 @@ const initialState: BusinessState = {
 };
 
 const businessReducer = (state: BusinessState, action: BusinessAction): BusinessState => {
-  console.log('Business reducer action:', action.type, 'payload' in action ? action.payload : 'no payload');
-
   switch (action.type) {
     case 'ADD_SALE':
       return {
@@ -124,13 +122,11 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         customers: state.customers.filter((customer) => customer.id !== action.payload),
       };
     case 'ADD_TASK':
-      console.log('Adding task:', action.payload);
       return {
         ...state,
         tasks: [...state.tasks, action.payload],
       };
     case 'UPDATE_TASK':
-      console.log('Updating task:', action.payload);
       return {
         ...state,
         tasks: state.tasks.map((task) =>
@@ -138,7 +134,6 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
         ),
       };
     case 'DELETE_TASK':
-      console.log('Deleting task with ID:', action.payload);
       return {
         ...state,
         tasks: state.tasks.filter((task) => task.id !== action.payload),
@@ -194,7 +189,6 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
 
   // Update local storage whenever the state changes
   React.useEffect(() => {
-    console.log('State updated, saving to localStorage:', state);
     setPersistedState(state);
   }, [state, setPersistedState]);
 
