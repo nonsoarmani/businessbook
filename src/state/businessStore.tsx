@@ -166,7 +166,7 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
     'businessBookState',
     initialState
   );
-  
+
   const [state, dispatch] = useReducer(businessReducer, persistedState);
 
   // Update local storage whenever the state changes

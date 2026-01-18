@@ -17,8 +17,8 @@ const CustomerDisplay = () => {
 
   const filteredCustomers = useMemo(() => {
     if (!searchTerm) return customers || [];
-    
-    return (customers || []).filter(customer => 
+
+    return (customers || []).filter(customer =>
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.includes(searchTerm) ||
       (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -34,7 +34,7 @@ const CustomerDisplay = () => {
       { key: 'location', label: 'Location' },
       { key: 'dateAdded', label: 'Date Added' },
     ];
-    
+
     exportToCSV('customer_contacts', customers || [], headers);
   };
 
@@ -60,7 +60,7 @@ const CustomerDisplay = () => {
               Export to CSV
             </Button>
           </div>
-          
+
           <div className="rounded-md border overflow-hidden">
             <Table>
               <TableHeader>
