@@ -16,7 +16,8 @@ import {
   Box,
   X,
   LogOut,
-  ListTodo
+  ListTodo,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -38,6 +39,7 @@ const navItems = [
   { name: 'Tasks', icon: ListTodo, path: '/tasks' },
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
+  { name: 'Subscription', icon: Zap, path: '/subscription' }, // Added Subscription
   { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 

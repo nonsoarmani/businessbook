@@ -15,6 +15,7 @@ import SettingsPage from "./pages/SettingsPage";
 import CustomersPage from "./pages/CustomersPage";
 import InventoryPage from "./pages/InventoryPage";
 import TasksPage from "./pages/TasksPage";
+import Subscription from "./pages/Subscription"; // Import Subscription page
 import { BusinessProvider } from "./state/businessStore";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/cash-flow" element={<CashFlowPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/subscription" element={<Subscription />} /> {/* Add Subscription route */}
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>
