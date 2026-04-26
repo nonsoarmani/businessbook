@@ -96,10 +96,10 @@ const SalesDisplay = () => {
           <Separator />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs md:text-sm">
             {Object.entries(todayPaymentBreakdown).map(([method, amount]) => (
-              <React.Fragment key={method}>
+              <div key={method} className="flex justify-between sm:block">
                 <p className="font-medium">{method}:</p>
-                <p className="text-right">{formatNaira(amount)}</p>
-              </React.Fragment>
+                <p className="sm:text-left">{formatNaira(amount)}</p>
+              </div>
             ))}
           </div>
         </CardContent>
@@ -121,13 +121,13 @@ const SalesDisplay = () => {
                 className="pl-9"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
               {(['All', 'Today', 'This Week', 'This Month'] as FilterPeriod[]).map((period) => (
                 <Button
                   key={period}
                   variant={filterPeriod === period ? 'default' : 'outline'}
                   onClick={() => setFilterPeriod(period)}
-                  className="text-xs md:text-sm min-w-[80px]"
+                  className="text-xs md:text-sm flex-1 md:flex-none min-w-[80px]"
                 >
                   {period}
                 </Button>
@@ -140,12 +140,14 @@ const SalesDisplay = () => {
           
           <div className="mb-4 p-3 border rounded-lg bg-muted/40">
             <h3 className="text-sm md:text-base font-semibold mb-2">Week-over-Week Sales Comparison</h3>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Current Week: <span className="font-medium text-foreground">{formatNaira(currentWeekSales)}</span>
-            </p>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Last Week: <span className="font-medium text-foreground">{formatNaira(lastWeekSales)}</span>
-            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Current Week: <span className="font-medium text-foreground">{formatNaira(currentWeekSales)}</span>
+              </p>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                Last Week: <span className="font-medium text-foreground">{formatNaira(lastWeekSales)}</span>
+              </p>
+            </div>
             {percentageChange !== null && (
               <p
                 className={cn(
@@ -156,16 +158,6 @@ const SalesDisplay = () => {
                 {percentageChange >= 0 ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(2)}% vs Last Week
               </p>
             )}
-            {percentageChange === null && lastWeekSales === 0 && currentWeekSales > 0 && (
-              <p className="text-xs md:text-sm font-semibold mt-1 text-success">
-                ↑ 100% vs Last Week (No sales last week)
-              </p>
-            )}
-            {percentageChange === null && lastWeekSales === 0 && currentWeekSales === 0 && (
-              <p className="text-xs md:text-sm font-semibold mt-1 text-muted-foreground">
-                No sales recorded for last two weeks.
-              </p>
-            )}
           </div>
           
           <div className="rounded-md border overflow-hidden">
@@ -173,7 +165,7 @@ const SalesDisplay = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="cursor-pointer text-xs md:text-sm" onClick={() => handleSort('date')}>
+                    <TableHead className="cursor-pointer text-xs md:text-sm whitespace-nowrap" onClick={() => handleSort('date')}>
                       Date
                       {sortKey === 'date' && (
                         <ArrowUpDown
@@ -184,7 +176,7 @@ const SalesDisplay = () => {
                         />
                       )}
                     </TableHead>
-                    <TableHead className="cursor-pointer text-xs md:text-sm" onClick={() => handleSort('item')}>
+                    <TableHead className="cursor-pointer text-xs md:text-sm whitespace-nowrap" onClick={() => handleSort('item')}>
                       Item
                       {sortKey === 'item' && (
                         <ArrowUpDown
@@ -195,7 +187,7 @@ const SalesDisplay = () => {
                         />
                       )}
                     </TableHead>
-                    <TableHead className="text-right cursor-pointer text-xs md:text-sm" onClick={() => handleSort('amount')}>
+                    <TableHead className="text-right cursor-pointer text-xs md:text-sm whitespace-nowrap" onClick={() => handleSort('amount')}>
                       Amount
                       {sortKey === 'amount' && (
                         <ArrowUpDown
@@ -206,7 +198,7 @@ const SalesDisplay = () => {
                         />
                       )}
                     </TableHead>
-                    <TableHead className="cursor-pointer text-xs md:text-sm" onClick={() => handleSort('paymentMethod')}>
+                    <TableHead className="cursor-pointer text-xs md:text-sm whitespace-nowrap" onClick={() => handleSort('paymentMethod')}>
                       Payment
                       {sortKey === 'paymentMethod' && (
                         <ArrowUpDown
@@ -223,16 +215,16 @@ const SalesDisplay = () => {
                   {filteredSales.length > 0 ? (
                     filteredSales.map((sale) => (
                       <TableRow key={sale.id}>
-                        <TableCell className="text-xs md:text-sm">{format(parseISO(sale.date), 'dd/MM/yyyy')}</TableCell>
-                        <TableCell className="text-xs md:text-sm max-w-[100px] md:max-w-none truncate">{sale.item}</TableCell>
-                        <TableCell className="text-right text-xs md:text-sm">{formatNaira(sale.amount)}</TableCell>
-                        <TableCell className="text-xs md:text-sm">{sale.paymentMethod}</TableCell>
+                        <TableCell className="text-xs md:text-sm whitespace-nowrap">{format(parseISO(sale.date), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell className="text-xs md:text-sm max-w-[120px] md:max-w-none truncate">{sale.item}</TableCell>
+                        <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(sale.amount)}</TableCell>
+                        <TableCell className="text-xs md:text-sm whitespace-nowrap">{sale.paymentMethod}</TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
                       <TableCell colSpan={4} className="h-20 text-center text-muted-foreground text-xs md:text-sm">
-                        No sales found for the selected period or search term.
+                        No sales found.
                       </TableCell>
                     </TableRow>
                   )}

@@ -66,105 +66,99 @@ const InventoryDisplay = () => {
       {/* Low Stock Alert */}
       {lowStockItems.length > 0 && (
         <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="flex items-center text-destructive">
+          <CardHeader className="p-4">
+            <CardTitle className="flex items-center text-destructive text-lg">
               <AlertTriangle className="mr-2 h-5 w-5" />
               Low Stock Alert
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-0">
             <p className="text-sm">
-              You have <span className="font-bold">{lowStockItems.length}</span> item(s) running low on stock.
+              <span className="font-bold">{lowStockItems.length}</span> item(s) running low.
             </p>
           </CardContent>
         </Card>
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Inventory Items</CardTitle>
+        <CardHeader className="p-4">
+          <CardTitle className="text-xl md:text-2xl font-bold">Inventory Items</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="relative w-full md:w-1/3">
+        <CardContent className="p-4">
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, category, or supplier..."
+                placeholder="Search inventory..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
             
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <Button
                   key={category}
                   variant={categoryFilter === category ? 'default' : 'outline'}
                   onClick={() => setCategoryFilter(category)}
-                  className="text-xs md:text-sm"
+                  className="text-xs md:text-sm flex-1 md:flex-none"
                 >
                   {category}
                 </Button>
               ))}
             </div>
             
-            <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto">
-              <FileText className="mr-2 h-4 w-4" />
-              Export to CSV
+            <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto text-xs md:text-sm">
+              <FileText className="mr-2 h-4 w-4" /> Export CSV
             </Button>
           </div>
           
           <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Cost Price</TableHead>
-                  <TableHead className="text-right">Selling Price</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInventory.length > 0 ? (
-                  filteredInventory.map((item) => (
-                    <TableRow 
-                      key={item.id} 
-                      className={cn(
-                        item.quantity <= (item.lowStockThreshold || 0) && "bg-destructive/10"
-                      )}
-                    >
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className={cn(
-                        "text-right",
-                        item.quantity <= (item.lowStockThreshold || 0) && "text-destructive font-bold"
-                      )}>
-                        {item.quantity} {item.unit}
-                        {item.quantity <= (item.lowStockThreshold || 0) && (
-                          <AlertTriangle className="inline-block ml-2 h-4 w-4 text-destructive" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">{formatNaira(item.costPrice)}</TableCell>
-                      <TableCell className="text-right">{formatNaira(item.sellingPrice)}</TableCell>
-                      <TableCell>{item.supplier || '-'}</TableCell>
-                      <TableCell>{format(new Date(item.lastUpdated), 'dd/MM/yyyy')}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                      {searchTerm || categoryFilter !== 'All' 
-                        ? 'No inventory items found matching your search.' 
-                        : 'No inventory items added yet.'}
-                    </TableCell>
+                    <TableHead className="text-xs md:text-sm whitespace-nowrap">Item Name</TableHead>
+                    <TableHead className="text-xs md:text-sm whitespace-nowrap">Category</TableHead>
+                    <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Quantity</TableHead>
+                    <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Cost</TableHead>
+                    <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Selling</TableHead>
+                    <TableHead className="text-xs md:text-sm whitespace-nowrap">Supplier</TableHead>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredInventory.length > 0 ? (
+                    filteredInventory.map((item) => (
+                      <TableRow 
+                        key={item.id} 
+                        className={cn(
+                          item.quantity <= (item.lowStockThreshold || 0) && "bg-destructive/10"
+                        )}
+                      >
+                        <TableCell className="font-medium text-xs md:text-sm whitespace-nowrap">{item.name}</TableCell>
+                        <TableCell className="text-xs md:text-sm whitespace-nowrap">{item.category}</TableCell>
+                        <TableCell className={cn(
+                          "text-right text-xs md:text-sm whitespace-nowrap",
+                          item.quantity <= (item.lowStockThreshold || 0) && "text-destructive font-bold"
+                        )}>
+                          {item.quantity} {item.unit}
+                        </TableCell>
+                        <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(item.costPrice)}</TableCell>
+                        <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(item.sellingPrice)}</TableCell>
+                        <TableCell className="text-xs md:text-sm whitespace-nowrap">{item.supplier || '-'}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
+                        No items found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>

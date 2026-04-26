@@ -6,11 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, CreditCard, Zap } from 'lucide-react';
+import { Check, CreditCard } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
-import { addMonths, addYears, format } from 'date-fns';
+import { addMonths, addYears } from 'date-fns';
 
-const PAYSTACK_PUBLIC_KEY = "pk_test_your_public_key_here"; // In a real app, this would be an env var
+// Using environment variable for the public key
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "";
 
 const Subscription = () => {
   const { user } = useAuth();
@@ -42,7 +43,6 @@ const Subscription = () => {
         ? addMonths(new Date(), 1) 
         : addYears(new Date(), 1);
 
-      // 1. Record subscription
       const { error: subError } = await supabase
         .from('subscriptions')
         .insert({
@@ -56,7 +56,6 @@ const Subscription = () => {
 
       if (subError) throw subError;
 
-      // 2. Update profile status
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ subscription_status: 'pro' })
@@ -78,6 +77,7 @@ const Subscription = () => {
       email: user?.email || '',
       amount: plan.amount,
       publicKey: PAYSTACK_PUBLIC_KEY,
+      onClose: () => showError('Payment cancelled.'),
     };
 
     const initializePayment = usePaystackPayment(config);
@@ -85,16 +85,13 @@ const Subscription = () => {
     return (
       <Button 
         className="w-full" 
-        disabled={loading}
+        disabled={loading || !PAYSTACK_PUBLIC_KEY}
         onClick={() => {
-          initializePayment(
-            (ref) => handlePaymentSuccess(ref, plan),
-            () => showError('Payment cancelled.')
-          );
+          initializePayment((ref) => handlePaymentSuccess(ref, plan));
         }}
       >
         <CreditCard className="mr-2 h-4 w-4" />
-        Subscribe Now
+        {PAYSTACK_PUBLIC_KEY ? 'Subscribe Now' : 'Configuration Missing'}
       </Button>
     );
   };
