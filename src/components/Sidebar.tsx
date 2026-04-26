@@ -3,6 +3,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -39,13 +40,13 @@ const navItems = [
   { name: 'Tasks', icon: ListTodo, path: '/tasks' },
   { name: 'Reports', icon: BarChart, path: '/reports' },
   { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
-  { name: 'Subscription', icon: Zap, path: '/subscription' }, // Added Subscription
+  { name: 'Subscription', icon: Zap, path: '/subscription' },
   { name: 'Settings', icon: Settings, path: '/settings' },
 ];
 
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -64,14 +65,21 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
       )}
     >
       <div className="flex h-16 items-center justify-between border-b px-4">
-        <h1
-          className={cn(
-            "font-bold text-lg text-sidebar-primary transition-opacity duration-300",
-            isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+        <div className="flex items-center gap-2 overflow-hidden">
+          <h1
+            className={cn(
+              "font-bold text-lg text-sidebar-primary transition-opacity duration-300 whitespace-nowrap",
+              isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+            )}
+          >
+            BusinessBook
+          </h1>
+          {!isCollapsed && profile?.subscription_status === 'pro' && (
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
+              PRO
+            </Badge>
           )}
-        >
-          BusinessBook
-        </h1>
+        </div>
         <LayoutDashboard
           className={cn(
             "text-sidebar-primary transition-opacity duration-300",
@@ -115,6 +123,12 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
       </ScrollArea>
 
       <div className="p-2 border-t">
+        <div className={cn("px-3 py-2 mb-2", isCollapsed ? "hidden" : "block")}>
+          <p className="text-xs font-medium text-muted-foreground truncate">{profile?.first_name || 'User'}</p>
+          <p className="text-[10px] text-muted-foreground truncate opacity-70">
+            {profile?.subscription_status === 'pro' ? 'Pro Plan' : 'Free Plan'}
+          </p>
+        </div>
         <Button
           variant="ghost"
           className="w-full justify-start"
@@ -130,10 +144,6 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
             Logout
           </span>
         </Button>
-      </div>
-
-      <div className="mt-auto p-2 border-t text-center text-xs text-muted-foreground">
-        <p className={cn(isCollapsed ? "hidden" : "block")}>Manage your business</p>
       </div>
     </div>
   );

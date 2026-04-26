@@ -77,7 +77,6 @@ const Subscription = () => {
       email: user?.email || '',
       amount: plan.amount,
       publicKey: PAYSTACK_PUBLIC_KEY,
-      onClose: () => showError('Payment cancelled.'),
     };
 
     const initializePayment = usePaystackPayment(config);
@@ -87,7 +86,10 @@ const Subscription = () => {
         className="w-full" 
         disabled={loading || !PAYSTACK_PUBLIC_KEY}
         onClick={() => {
-          initializePayment((ref) => handlePaymentSuccess(ref, plan));
+          initializePayment({
+            onSuccess: (ref) => handlePaymentSuccess(ref, plan),
+            onClose: () => showError('Payment cancelled.'),
+          });
         }}
       >
         <CreditCard className="mr-2 h-4 w-4" />
