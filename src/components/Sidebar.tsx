@@ -47,6 +47,7 @@ const navItems = [
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
   const { signOut, profile } = useAuth();
+  const logoUrl = 'https://kugxbisasbylnnzpvrzw.supabase.co/storage/v1/object/public/user_uploads/Jotter%20Logo%203_2.png';
 
   const handleSignOut = async () => {
     try {
@@ -60,23 +61,28 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
     <div
       className={cn(
         "flex h-full flex-col border-r bg-sidebar transition-all duration-300 z-50",
-        // Desktop logic
         !isMobile && (isCollapsed ? "w-[70px]" : "w-[240px]"),
-        // Mobile logic: Sidebar is a fixed drawer
         isMobile && "fixed inset-y-0 left-0 w-[280px] shadow-xl",
         isMobile && isCollapsed && "-translate-x-full"
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b px-4">
+      <div className="flex h-20 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2 overflow-hidden">
-          <h1
-            className={cn(
-              "font-bold text-lg text-sidebar-primary transition-opacity duration-300 whitespace-nowrap",
-              !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-            )}
-          >
-            BusinessBook
-          </h1>
+          <div className={cn("flex flex-col items-start", isCollapsed && !isMobile && "items-center")}>
+            <img 
+              src={logoUrl} 
+              alt="Jotter Logo" 
+              className={cn("h-8 w-auto object-contain mb-1", isCollapsed && !isMobile && "h-6")} 
+            />
+            <h1
+              className={cn(
+                "font-bold text-sm text-sidebar-primary transition-opacity duration-300 whitespace-nowrap",
+                !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+              )}
+            >
+              My Business Jotter
+            </h1>
+          </div>
           {(!isCollapsed || isMobile) && profile?.subscription_status === 'pro' && (
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
               PRO

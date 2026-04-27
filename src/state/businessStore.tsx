@@ -1,16 +1,14 @@
 "use client";
 import React, { createContext, useReducer, useContext, ReactNode } from 'react';
-import { BusinessState, BusinessAction, Sale, Expense, Debt, Receipt, BusinessSettings, Customer, InventoryItem, Task } from '@/types';
+import { BusinessState, BusinessAction, BusinessSettings } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 
-// Import the useLocalStorage hook
-
 const initialSettings: BusinessSettings = {
-  businessName: 'BusinessBook',
-  businessEmail: 'info@businessbook.com',
+  businessName: 'My Business Jotter',
+  businessEmail: 'info@businessjotter.com',
   businessPhone: '+234 800 123 4567',
   businessAddress: '123 Business Street, City, State',
-  businessLogoUrl: '',
+  businessLogoUrl: 'https://kugxbisasbylnnzpvrzw.supabase.co/storage/v1/object/public/user_uploads/Jotter%20Logo%203_2.png',
 };
 
 const initialState: BusinessState = {
@@ -19,7 +17,7 @@ const initialState: BusinessState = {
   debts: [],
   receipts: [],
   customers: [],
-  tasks: [], // Ensure tasks is initialized as an empty array
+  tasks: [],
   inventory: [],
   settings: initialSettings,
 };
@@ -179,19 +177,15 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
-  // Use useLocalStorage to persist the state
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>(
     'businessBookState',
     initialState
   );
 
-  // Merge persistedState with initialState to ensure all properties exist
-  // This handles cases where local storage might have an older state structure
   const mergedState = { ...initialState, ...persistedState };
 
   const [state, dispatch] = useReducer(businessReducer, mergedState);
 
-  // Update local storage whenever the state changes
   React.useEffect(() => {
     setPersistedState(state);
   }, [state, setPersistedState]);
