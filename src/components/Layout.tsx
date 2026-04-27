@@ -10,13 +10,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ThemeToggle } from './ThemeToggle';
 import { useBusiness } from '@/state/businessStore';
 import { parseISO, isToday, isTomorrow, isPast } from 'date-fns';
+import logo from '@/assets/logo.png';
 
 const Layout = () => {
   const isMobile = useIsMobile();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(isMobile);
   const { state } = useBusiness();
   const { debts = [], inventory = [] } = state;
-  const logoUrl = 'https://kugxbisasbylnnzpvrzw.supabase.co/storage/v1/object/public/user_uploads/Jotter%20Logo%203_2.png';
 
   React.useEffect(() => {
     setIsSidebarCollapsed(isMobile);
@@ -61,7 +61,7 @@ const Layout = () => {
               <Menu className="h-6 w-6" />
             </Button>
             <div className="flex items-center gap-2">
-              <img src={logoUrl} alt="Jotter Logo" className="h-8 w-auto object-contain" />
+              <img src={logo} alt="Jotter Logo" className="h-8 w-auto object-contain" />
               <h1 className="font-bold text-lg md:text-xl text-primary truncate">My Business Jotter</h1>
             </div>
           </div>
@@ -69,7 +69,7 @@ const Layout = () => {
           <div className="flex items-center gap-2">
             <div className="relative">
               <Button variant="ghost" size="icon" asChild className="h-9 w-9">
-                <a href="/settings#notifications">
+                <a href="/app/settings#notifications">
                   <Bell className="h-5 w-5" />
                   {notificationCount > 0 && (
                     <span className="absolute top-1 right-1 h-4 w-4 rounded-full bg-destructive text-[8px] text-white flex items-center justify-center border-2 border-background">

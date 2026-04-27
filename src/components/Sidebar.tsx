@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
+import logo from '@/assets/logo.png';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -47,7 +48,6 @@ const navItems = [
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
   const { signOut, profile } = useAuth();
-  const logoUrl = 'https://kugxbisasbylnnzpvrzw.supabase.co/storage/v1/object/public/user_uploads/Jotter%20Logo%203_2.png';
 
   const handleSignOut = async () => {
     try {
@@ -70,7 +70,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
         <div className="flex items-center gap-2 overflow-hidden">
           <div className={cn("flex flex-col items-start", isCollapsed && !isMobile && "items-center")}>
             <img 
-              src={logoUrl} 
+              src={logo} 
               alt="Jotter Logo" 
               className={cn("h-8 w-auto object-contain mb-1", isCollapsed && !isMobile && "h-6")} 
             />

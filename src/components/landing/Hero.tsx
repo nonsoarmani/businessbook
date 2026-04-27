@@ -23,9 +23,9 @@ const Hero = () => {
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button size="lg" asChild className="bg-green-600 hover:bg-green-700 text-white px-8 h-14 text-lg">
+            <Button size="lg" asChild className="bg-green-600 hover:bg-green-700 text-white px-8 h-auto min-h-[3.5rem] py-4 text-lg whitespace-normal text-center">
               <Link to="/login">
-                Get Started for as little as ₦2,000 monthly <ArrowRight className="ml-2 h-5 w-5" />
+                Get Started for as little as ₦2,000 monthly <ArrowRight className="ml-2 h-5 w-5 shrink-0" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-green-600 text-green-700 hover:bg-green-50 h-14 text-lg">
