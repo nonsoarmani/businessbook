@@ -25,7 +25,7 @@ const Hero = () => {
           <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <Button size="lg" asChild className="bg-green-600 hover:bg-green-700 text-white px-8 h-14 text-lg">
               <Link to="/login">
-                Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
+                Get Started for as little as ₦2,000 monthly <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-green-600 text-green-700 hover:bg-green-50 h-14 text-lg">
@@ -33,11 +33,7 @@ const Hero = () => {
             </Button>
           </div>
 
-          <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
-            <div className="flex items-center gap-2 text-gray-700">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <span>No Internet Required*</span>
-            </div>
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
             <div className="flex items-center gap-2 text-gray-700">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               <span>Secure Cloud Backup</span>
