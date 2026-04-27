@@ -30,18 +30,18 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, path: '/' },
-  { name: 'Sales', icon: ShoppingCart, path: '/sales' },
-  { name: 'Expenses', icon: Wallet, path: '/expenses' },
-  { name: 'Inventory', icon: Box, path: '/inventory' },
-  { name: 'Debts', icon: Handshake, path: '/debts' },
-  { name: 'Receipts', icon: ReceiptText, path: '/receipts' },
-  { name: 'Customers', icon: Users, path: '/customers' },
-  { name: 'Tasks', icon: ListTodo, path: '/tasks' },
-  { name: 'Reports', icon: BarChart, path: '/reports' },
-  { name: 'Cash Flow', icon: Banknote, path: '/cash-flow' },
-  { name: 'Subscription', icon: Zap, path: '/subscription' },
-  { name: 'Settings', icon: Settings, path: '/settings' },
+  { name: 'Dashboard', icon: LayoutDashboard, path: '/app' },
+  { name: 'Sales', icon: ShoppingCart, path: '/app/sales' },
+  { name: 'Expenses', icon: Wallet, path: '/app/expenses' },
+  { name: 'Inventory', icon: Box, path: '/app/inventory' },
+  { name: 'Debts', icon: Handshake, path: '/app/debts' },
+  { name: 'Receipts', icon: ReceiptText, path: '/app/receipts' },
+  { name: 'Customers', icon: Users, path: '/app/customers' },
+  { name: 'Tasks', icon: ListTodo, path: '/app/tasks' },
+  { name: 'Reports', icon: BarChart, path: '/app/reports' },
+  { name: 'Cash Flow', icon: Banknote, path: '/app/cash-flow' },
+  { name: 'Subscription', icon: Zap, path: '/app/subscription' },
+  { name: 'Settings', icon: Settings, path: '/app/settings' },
 ];
 
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
@@ -103,6 +103,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
             <NavLink
               key={item.name}
               to={item.path}
+              end={item.path === '/app'}
               onClick={isMobile ? onToggle : undefined}
               className={({ isActive }) =>
                 cn(

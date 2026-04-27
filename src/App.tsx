@@ -15,7 +15,8 @@ import SettingsPage from "./pages/SettingsPage";
 import CustomersPage from "./pages/CustomersPage";
 import InventoryPage from "./pages/InventoryPage";
 import TasksPage from "./pages/TasksPage";
-import Subscription from "./pages/Subscription"; // Import Subscription page
+import Subscription from "./pages/Subscription";
+import LandingPage from "./pages/LandingPage";
 import { BusinessProvider } from "./state/businessStore";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -43,27 +44,32 @@ const App = () => (
       <AuthProvider>
         <BusinessProvider>
           <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={
+            
+            {/* Protected App Routes */}
+            <Route path="/app" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
-              <Route path="/sales" element={<SalesPage />} />
-              <Route path="/expenses" element={<ExpensesPage />} />
-              <Route path="/debts" element={<DebtsPage />} />
-              <Route path="/receipts" element={<ReceiptsPage />} />
-              <Route path="/customers" element={<CustomersPage />} />
-              <Route path="/inventory" element={<InventoryPage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/cash-flow" element={<CashFlowPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/subscription" element={<Subscription />} /> {/* Add Subscription route */}
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
+              <Route path="sales" element={<SalesPage />} />
+              <Route path="expenses" element={<ExpensesPage />} />
+              <Route path="debts" element={<DebtsPage />} />
+              <Route path="receipts" element={<ReceiptsPage />} />
+              <Route path="customers" element={<CustomersPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="tasks" element={<TasksPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="cash-flow" element={<CashFlowPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="subscription" element={<Subscription />} />
             </Route>
+
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BusinessProvider>
       </AuthProvider>
