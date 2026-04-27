@@ -59,9 +59,12 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-sidebar transition-all duration-300",
-        isCollapsed ? "w-[60px]" : "w-[240px]",
-        isMobile && isCollapsed ? "w-[240px]" : "w-0 lg:w-[240px]"
+        "flex h-full flex-col border-r bg-sidebar transition-all duration-300 z-50",
+        // Desktop logic
+        !isMobile && (isCollapsed ? "w-[70px]" : "w-[240px]"),
+        // Mobile logic: Sidebar is a fixed drawer
+        isMobile && "fixed inset-y-0 left-0 w-[280px] shadow-xl",
+        isMobile && isCollapsed && "-translate-x-full"
       )}
     >
       <div className="flex h-16 items-center justify-between border-b px-4">
@@ -69,50 +72,45 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
           <h1
             className={cn(
               "font-bold text-lg text-sidebar-primary transition-opacity duration-300 whitespace-nowrap",
-              isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+              !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
             )}
           >
             BusinessBook
           </h1>
-          {!isCollapsed && profile?.subscription_status === 'pro' && (
+          {(!isCollapsed || isMobile) && profile?.subscription_status === 'pro' && (
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
               PRO
             </Badge>
           )}
         </div>
-        <LayoutDashboard
-          className={cn(
-            "text-sidebar-primary transition-opacity duration-300",
-            isCollapsed ? "opacity-100 w-6 h-6" : "opacity-0 w-0 h-0"
-          )}
-        />
-        {isMobile && !isCollapsed && (
-          <Button variant="ghost" size="icon" onClick={onToggle} className="lg:hidden">
+        
+        {isMobile && (
+          <Button variant="ghost" size="icon" onClick={onToggle}>
             <X className="h-5 w-5 text-sidebar-foreground" />
           </Button>
         )}
       </div>
 
       <ScrollArea className="flex-1 py-4">
-        <nav className="grid items-start gap-2 px-2">
+        <nav className="grid items-start gap-1 px-2">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
-              onClick={isMobile && !isCollapsed ? onToggle : undefined}
+              onClick={isMobile ? onToggle : undefined}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   isActive && "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
-                  isCollapsed && "justify-center"
+                  !isMobile && isCollapsed && "justify-center px-2"
                 )
               }
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-5 w-5 shrink-0" />
               <span
                 className={cn(
                   "transition-opacity duration-300",
-                  isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                  !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
                 )}
               >
                 {item.name}
@@ -122,23 +120,23 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
         </nav>
       </ScrollArea>
 
-      <div className="p-2 border-t">
-        <div className={cn("px-3 py-2 mb-2", isCollapsed ? "hidden" : "block")}>
-          <p className="text-xs font-medium text-muted-foreground truncate">{profile?.first_name || 'User'}</p>
+      <div className="p-4 border-t">
+        <div className={cn("mb-4", !isMobile && isCollapsed ? "hidden" : "block")}>
+          <p className="text-xs font-semibold text-muted-foreground truncate">{profile?.first_name || 'User'}</p>
           <p className="text-[10px] text-muted-foreground truncate opacity-70">
             {profile?.subscription_status === 'pro' ? 'Pro Plan' : 'Free Plan'}
           </p>
         </div>
         <Button
           variant="ghost"
-          className="w-full justify-start"
+          className={cn("w-full justify-start", !isMobile && isCollapsed && "justify-center px-2")}
           onClick={handleSignOut}
         >
-          <LogOut className="h-5 w-5 mr-3" />
+          <LogOut className="h-5 w-5 shrink-0" />
           <span
             className={cn(
-              "transition-opacity duration-300",
-              isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+              "ml-3 transition-opacity duration-300",
+              !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
             )}
           >
             Logout
