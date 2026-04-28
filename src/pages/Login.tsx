@@ -30,7 +30,8 @@ const Login = () => {
         const { error } = await signIn(email, password);
         if (error) throw error;
         showSuccess('Logged in successfully!');
-        navigate('/');
+        // Navigate to the protected app routes (e.g., Dashboard) after login
+        navigate('/app');
       }
     } catch (error: any) {
       showError(error.message || 'An error occurred during authentication.');
@@ -59,8 +60,7 @@ const Login = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+                required              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
