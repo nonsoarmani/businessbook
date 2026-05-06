@@ -18,15 +18,15 @@ const Dashboard = () => {
   const { sales = [], expenses = [], debts = [], customers = [], inventory = [] } = state;
   const today = new Date();
   
-  const todaySalesData = useMemo(() => getSalesForDay(sales, today), [sales, today]);
-  const totalTodaySales = useMemo(() => calculateTotalSales(todaySalesData), [todaySalesData]);
+  const todaySalesData = React.useMemo(() => getSalesForDay(sales, today), [sales, today]);
+  const totalTodaySales = React.useMemo(() => calculateTotalSales(todaySalesData), [todaySalesData]);
   
-  const todayExpensesData = useMemo(() => getExpensesForDay(expenses, today), [expenses, today]);
-  const totalTodayExpenses = useMemo(() => calculateTotalExpenses(todayExpensesData), [todayExpensesData]);
+  const todayExpensesData = React.useMemo(() => getExpensesForDay(expenses, today), [expenses, today]);
+  const totalTodayExpenses = React.useMemo(() => calculateTotalExpenses(todayExpensesData), [todayExpensesData]);
   
   const todayProfitLoss = totalTodaySales - totalTodayExpenses;
   
-  const totalCustomers = useMemo(() => customers.length, [customers]);
+  const totalCustomers = React.useMemo(() => customers.length, [customers]);
 
   const handleClearAllData = () => {
     try {
@@ -82,48 +82,61 @@ const Dashboard = () => {
           </div>
           <p className="text-2xl font-bold">{totalCustomers}</p>
         </div>
-                <InventorySummary />
+        
+        <InventorySummary />
       </div>
       
       {/* Quick Actions */}
       <div className="space-y-4">
         <h2 className="text-lg md:text-xl font-semibold">Quick Actions</h2>
-        <div className="flex flex-col md:flex-row gap-3">
-          <Link to="sales">
-            <Button asChild variant="default" className="w-full py-4 flex flex-col items-center gap-2">
-              <PlusCircle className="h-5 w-5" />
-              <span className="text-xs">Add Sale</span>
+        <div className="grid grid-cols-2 md:flex md:flex-row gap-3">
+          <Link to="sales" className="col-span-1">
+            <Button asChild variant="default" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <PlusCircle className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-[10px] md:text-xs">Add Sale</span>
+              </div>
             </Button>
           </Link>
-          <Link to="expenses">
-            <Button asChild variant="secondary" className="w-full py-4 flex flex-col items-center gap-2">
-              <PlusCircle className="h-5 w-5" />
-              <span className="text-xs">Add Expense</span>
+          <Link to="expenses" className="col-span-1">
+            <Button asChild variant="secondary" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <PlusCircle className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-[10px] md:text-xs">Add Expense</span>
+              </div>
             </Button>
           </Link>
-          <Link to="inventory">
-            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
-              <Box className="h-5 w-5" />
-              <span className="text-xs">Inventory</span>
+          <Link to="inventory" className="col-span-1">
+            <Button asChild variant="outline" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <Box className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-[10px] md:text-xs">Inventory</span>
+              </div>
             </Button>
           </Link>
-          <Link to="debts">
-            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
-              <Handshake className="h-5 w-5" />
-              <span className="text-xs">Debts</span>
+          <Link to="debts" className="col-span-1">
+            <Button asChild variant="outline" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <Handshake className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-[10px] md:text-xs">Debts</span>
+              </div>
             </Button>
           </Link>
-          <Link to="customers">
-            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
-              <Users className="h-5 w-5" />
-              <span className="text-xs">Customers</span>
+          <Link to="customers" className="col-span-1">
+            <Button asChild variant="outline" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2">
+              <div className="flex flex-col items-center gap-1">
+                <Users className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="text-[10px] md:text-xs">Customers</span>
+              </div>
             </Button>
           </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full py-4 flex flex-col items-center gap-2">
-                <Trash2 className="h-5 w-5" />
-                <span className="text-xs">Clear Data</span>
+              <Button variant="destructive" className="w-full py-3 md:py-4 flex flex-col items-center gap-1 md:gap-2 col-span-1">
+                <div className="flex flex-col items-center gap-1">
+                  <Trash2 className="h-4 w-4 md:h-5 md:w-5" />
+                  <span className="text-[10px] md:text-xs">Clear Data</span>
+                </div>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="max-w-[90vw] rounded-xl">

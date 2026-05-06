@@ -66,7 +66,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
         isMobile && isCollapsed && "-translate-x-full"
       )}
     >
-      <div className="flex h-20 items-center justify-between border-b px-4">
+      <div className="flex h-16 items-center justify-between border-b px-4">
         <div className="flex items-center gap-2 overflow-hidden">
           <div className={cn("flex flex-col items-start", isCollapsed && !isMobile && "items-center")}>
             <img 
@@ -107,7 +107,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
               onClick={isMobile ? onToggle : undefined}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   isActive && "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary hover:text-sidebar-primary-foreground",
                   !isMobile && isCollapsed && "justify-center px-2"
                 )

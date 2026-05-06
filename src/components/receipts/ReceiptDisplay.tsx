@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { format, parseISO } from 'date-fns';
 import { Printer, Download, Search } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,13 +15,13 @@ import { useReactToPrint } from 'react-to-print';
 
 const ReceiptDisplay = () => {
   const { state } = useBusiness();
-  const { receipts, settings } = state; // Destructure settings from state
+  const { receipts, settings } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  const filteredReceipts = useMemo(() => {
-    let currentReceipts = [...receipts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Newest first
+  const filteredReceipts = React.useMemo(() => {
+    let currentReceipts = [...receipts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     if (searchTerm) {
       currentReceipts = currentReceipts.filter(receipt =>
         receipt.receiptNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,7 +39,8 @@ const ReceiptDisplay = () => {
       @page { size: A4; margin: 20mm; }
       body { 
         -webkit-print-color-adjust: exact !important; 
-        print-color-adjust: exact !important;       }
+        print-color-adjust: exact !important;
+      }
       .print-only { display: block !important; }
       .no-print { display: none !important; }
     `,
@@ -71,42 +72,44 @@ const ReceiptDisplay = () => {
             </div>
           </div>
           <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Receipt No.</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Items</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReceipts.length > 0 ? (
-                  filteredReceipts.map((receipt) => (
-                    <TableRow key={receipt.id}>
-                      <TableCell>{receipt.receiptNumber}</TableCell>
-                      <TableCell>{format(parseISO(receipt.date), 'dd/MM/yyyy')}</TableCell>
-                      <TableCell>{receipt.customerName}</TableCell>
-                      <TableCell className="max-w-[150px] truncate">{receipt.items}</TableCell>
-                      <TableCell className="text-right">{formatNaira(receipt.amount)}</TableCell>
-                      <TableCell className="text-center">
-                        <Button variant="outline" size="sm" onClick={() => setSelectedReceipt(receipt)}>
-                          View
-                        </Button>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Receipt No.</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Items</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredReceipts.length > 0 ? (
+                    filteredReceipts.map((receipt) => (
+                      <TableRow key={receipt.id}>
+                        <TableCell>{receipt.receiptNumber}</TableCell>
+                        <TableCell>{format(parseISO(receipt.date), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>{receipt.customerName}</TableCell>
+                        <TableCell className="max-w-[150px] truncate">{receipt.items}</TableCell>
+                        <TableCell className="text-right">{formatNaira(receipt.amount)}</TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedReceipt(receipt)}>
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                        No receipts found.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                      No receipts found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -128,11 +131,71 @@ const ReceiptDisplay = () => {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Receipt Template for PDF/Screen */}
             <div 
               ref={receiptRef} 
-              className="p-8 border rounded-md bg-white text-gray-900 shadow-lg print:shadow-none print:border-0 print:bg-white print:text-black overflow-x-auto"
+              className="p-4 md:p-8 max-w-2xl mx-auto bg-white text-black print:shadow-none print:border-0 print:p-0 print:max-w-full"
             >
-              {/* ... existing receipt content ... */}
+              {/* Business Header */}
+              <div className="text-center mb-6">
+                {settings?.businessLogoUrl && (
+                  <img 
+                    src={settings.businessLogoUrl} 
+                    alt="Business Logo" 
+                    className="h-12 md:h-16 mx-auto mb-3 object-contain"
+                  />
+                )}
+                <h1 className="text-xl md:text-2xl font-bold">{settings?.businessName || 'Business Name'}</h1>
+                <p className="text-xs md:text-sm text-gray-600">{settings?.businessAddress}</p>
+                <p className="text-xs md:text-sm text-gray-600">
+                  {settings?.businessPhone} {settings?.businessEmail ? `| ${settings.businessEmail}` : ''}
+                </p>
+              </div>
+
+              <Separator className="my-4" />
+
+              {/* Receipt Info */}
+              <div className="flex flex-col md:flex-row justify-between mb-4 text-sm">
+                <div className="mb-2 md:mb-0">
+                  <p><span className="font-semibold">Receipt No:</span> {selectedReceipt.receiptNumber}</p>
+                  <p><span className="font-semibold">Date:</span> {format(parseISO(selectedReceipt.date), 'PPP')}</p>
+                </div>
+                <div className="text-left md:text-right">
+                  <p><span className="font-semibold">Customer:</span> {selectedReceipt.customerName}</p>
+                  {selectedReceipt.customerPhone && (
+                    <p><span className="font-semibold">Phone:</span> {selectedReceipt.customerPhone}</p>
+                  )}
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              {/* Items */}
+              <div className="mb-4">
+                <h2 className="text-base md:text-lg font-semibold mb-2">Items Sold</h2>
+                <p className="text-gray-800 text-sm md:text-base">{selectedReceipt.items}</p>
+              </div>
+
+              <Separator className="my-4" />
+
+              {/* Total */}
+              <div className="flex justify-between text-lg md:text-xl font-bold mb-2">
+                <span>Total Amount:</span>
+                <span>{formatNaira(selectedReceipt.amount)}</span>
+              </div>
+
+              {/* Payment Method */}
+              <div className="text-sm text-gray-600">
+                <span className="font-semibold">Payment Method:</span> {selectedReceipt.paymentMethod}
+              </div>
+
+              <Separator className="my-6" />
+
+              {/* Footer */}
+              <div className="text-center text-xs md:text-sm text-gray-500">
+                <p>Thank you for your business!</p>
+                <p>Visit us again soon.</p>
+              </div>
             </div>
           </CardContent>
         </Card>
