@@ -1,5 +1,6 @@
 "use client";
-import React, { useMemo } from 'react';
+
+import React from 'react';
 import { useBusiness } from '@/state/businessStore';
 import { cn, formatNaira } from '@/lib/utils';
 import { calculateTotalSales, getSalesForDay } from '@/utils/salesCalculations';
@@ -10,6 +11,7 @@ import { PlusCircle, ShoppingCart, Wallet, Handshake, Users, Trash2, Box, Layout
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { showSuccess, showError } from '@/utils/toast';
 import InventorySummary from '@/components/dashboard/InventorySummary';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
   const { state, dispatch } = useBusiness();
@@ -36,8 +38,10 @@ const Dashboard = () => {
     }
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm md:text-base text-muted-foreground mt-1">Welcome back! Here's what's happening with your business today.</p>
@@ -78,49 +82,47 @@ const Dashboard = () => {
           </div>
           <p className="text-2xl font-bold">{totalCustomers}</p>
         </div>
-        
-        <InventorySummary />
+                <InventorySummary />
       </div>
       
       {/* Quick Actions */}
       <div className="space-y-4">
         <h2 className="text-lg md:text-xl font-semibold">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Button asChild variant="default" className="h-auto py-4 flex-col gap-2">
-            <Link to="/sales">
-              <PlusCircle className="h-5 w-5" /> 
+        <div className="flex flex-col md:flex-row gap-3">
+          <Link to="sales">
+            <Button asChild variant="default" className="w-full py-4 flex flex-col items-center gap-2">
+              <PlusCircle className="h-5 w-5" />
               <span className="text-xs">Add Sale</span>
-            </Link>
-          </Button>
-          <Button asChild variant="secondary" className="h-auto py-4 flex-col gap-2">
-            <Link to="/expenses">
-              <PlusCircle className="h-5 w-5" /> 
+            </Button>
+          </Link>
+          <Link to="expenses">
+            <Button asChild variant="secondary" className="w-full py-4 flex flex-col items-center gap-2">
+              <PlusCircle className="h-5 w-5" />
               <span className="text-xs">Add Expense</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 flex-col gap-2">
-            <Link to="/inventory">
-              <Box className="h-5 w-5" /> 
+            </Button>
+          </Link>
+          <Link to="inventory">
+            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
+              <Box className="h-5 w-5" />
               <span className="text-xs">Inventory</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 flex-col gap-2">
-            <Link to="/debts">
-              <Handshake className="h-5 w-5" /> 
+            </Button>
+          </Link>
+          <Link to="debts">
+            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
+              <Handshake className="h-5 w-5" />
               <span className="text-xs">Debts</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 flex-col gap-2">
-            <Link to="/customers">
-              <Users className="h-5 w-5" /> 
+            </Button>
+          </Link>
+          <Link to="customers">
+            <Button asChild variant="outline" className="w-full py-4 flex flex-col items-center gap-2">
+              <Users className="h-5 w-5" />
               <span className="text-xs">Customers</span>
-            </Link>
-          </Button>
-          
+            </Button>
+          </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="h-auto py-4 flex-col gap-2">
-                <Trash2 className="h-5 w-5" /> 
+              <Button variant="destructive" className="w-full py-4 flex flex-col items-center gap-2">
+                <Trash2 className="h-5 w-5" />
                 <span className="text-xs">Clear Data</span>
               </Button>
             </AlertDialogTrigger>
