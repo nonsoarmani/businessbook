@@ -1,7 +1,6 @@
 "use client";
 import React from 'react';
 import BusinessSettingsForm from '../components/settings/BusinessSettingsForm';
-import BackupRestore from '../components/settings/BackupRestore';
 import RecurringTransactions from '../components/settings/RecurringTransactions';
 import NotificationsManager from '../components/notifications/NotificationsManager';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -72,11 +71,6 @@ const SettingsPage = () => {
         <div className="bg-card p-4 rounded-lg shadow-sm">
           <h2 className="text-lg md:text-xl font-semibold mb-4">Recurring Transactions</h2>
           <RecurringTransactions />
-        </div>
-        
-        <div className="bg-card p-4 rounded-lg shadow-sm">
-          <h2 className="text-lg md:text-xl font-semibold mb-4">Backup & Restore</h2>
-          <BackupRestore />
         </div>
       </div>
     </div>

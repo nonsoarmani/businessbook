@@ -116,89 +116,111 @@ const ReceiptDisplay = () => {
 
       {/* Selected Receipt Display */}
       {selectedReceipt && (
-        <Card className="no-print">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-2xl font-bold">Receipt #{selectedReceipt.receiptNumber}</CardTitle>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleDownloadPdf}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
-              <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" />
-                Print
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {/* Receipt Template for PDF/Screen */}
-            <div 
-              ref={receiptRef} 
-              className="p-4 md:p-8 max-w-2xl mx-auto bg-white text-black print:shadow-none print:border-0 print:p-0 print:max-w-full"
-            >
-              {/* Business Header */}
-              <div className="text-center mb-6">
-                {settings?.businessLogoUrl && (
-                  <img 
-                    src={settings.businessLogoUrl} 
-                    alt="Business Logo" 
-                    className="h-12 md:h-16 mx-auto mb-3 object-contain"
-                  />
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Receipt Preview */}
+          <div className="flex-1 border rounded-lg p-8 bg-white text-black shadow-sm" ref={receiptRef}>
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                {settings.businessLogoUrl ? (
+                  <img src={settings.businessLogoUrl} alt="Logo" className="h-16 w-auto mb-4 object-contain" />
+                ) : (
+                  <div className="h-16 w-16 bg-primary/10 rounded flex items-center justify-center mb-4">
+                    <span className="text-primary font-bold text-2xl">{settings.businessName?.charAt(0)}</span>
+                  </div>
                 )}
-                <h1 className="text-xl md:text-2xl font-bold">{settings?.businessName || 'Business Name'}</h1>
-                <p className="text-xs md:text-sm text-gray-600">{settings?.businessAddress}</p>
-                <p className="text-xs md:text-sm text-gray-600">
-                  {settings?.businessPhone} {settings?.businessEmail ? `| ${settings.businessEmail}` : ''}
-                </p>
-              </div>
-
-              <Separator className="my-4" />
-
-              {/* Receipt Info */}
-              <div className="flex flex-col md:flex-row justify-between mb-4 text-sm">
-                <div className="mb-2 md:mb-0">
-                  <p><span className="font-semibold">Receipt No:</span> {selectedReceipt.receiptNumber}</p>
-                  <p><span className="font-semibold">Date:</span> {format(parseISO(selectedReceipt.date), 'PPP')}</p>
-                </div>
-                <div className="text-left md:text-right">
-                  <p><span className="font-semibold">Customer:</span> {selectedReceipt.customerName}</p>
-                  {selectedReceipt.customerPhone && (
-                    <p><span className="font-semibold">Phone:</span> {selectedReceipt.customerPhone}</p>
-                  )}
+                <h2 className="text-2xl font-bold text-primary uppercase tracking-tight">{settings.businessName}</h2>
+                <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                  <p>{settings.businessAddress}</p>
+                  <p>{settings.businessPhone}</p>
+                  <p>{settings.businessEmail}</p>
                 </div>
               </div>
-
-              <Separator className="my-4" />
-
-              {/* Items */}
-              <div className="mb-4">
-                <h2 className="text-base md:text-lg font-semibold mb-2">Items Sold</h2>
-                <p className="text-gray-800 text-sm md:text-base">{selectedReceipt.items}</p>
-              </div>
-
-              <Separator className="my-4" />
-
-              {/* Total */}
-              <div className="flex justify-between text-lg md:text-xl font-bold mb-2">
-                <span>Total Amount:</span>
-                <span>{formatNaira(selectedReceipt.amount)}</span>
-              </div>
-
-              {/* Payment Method */}
-              <div className="text-sm text-gray-600">
-                <span className="font-semibold">Payment Method:</span> {selectedReceipt.paymentMethod}
-              </div>
-
-              <Separator className="my-6" />
-
-              {/* Footer */}
-              <div className="text-center text-xs md:text-sm text-gray-500">
-                <p>Thank you for your business!</p>
-                <p>Visit us again soon.</p>
+              <div className="text-right">
+                <h1 className="text-4xl font-black text-primary/20 uppercase tracking-widest mb-4">Receipt</h1>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Receipt Number</p>
+                  <p className="text-lg font-mono font-bold">#{selectedReceipt.receiptNumber}</p>
+                  <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mt-4">Date</p>
+                  <p className="text-base font-medium">{format(parseISO(selectedReceipt.date), 'PPP')}</p>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="bg-primary/5 rounded-lg p-4 mb-8 flex justify-between items-center border border-primary/10">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-1">Billed To</p>
+                <p className="text-lg font-bold">{selectedReceipt.customerName}</p>
+                {selectedReceipt.customerPhone && (
+                  <p className="text-sm text-muted-foreground">{selectedReceipt.customerPhone}</p>
+                )}
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-1">Payment Method</p>
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                  {selectedReceipt.paymentMethod}
+                </span>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b-2 border-primary/20">
+                    <th className="text-left py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Description</th>
+                    <th className="text-right py-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  <tr>
+                    <td className="py-6 text-base font-medium leading-relaxed">{selectedReceipt.items}</td>
+                    <td className="py-6 text-right text-lg font-bold align-top">{formatNaira(selectedReceipt.amount)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end border-t-2 border-primary pt-6">
+              <div className="w-full max-w-[250px] space-y-3">
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <span className="text-sm font-semibold uppercase tracking-wider">Subtotal</span>
+                  <span className="text-base font-medium">{formatNaira(selectedReceipt.amount)}</span>
+                </div>
+                <div className="flex justify-between items-center border-t border-dashed border-gray-200 pt-3">
+                  <span className="text-lg font-black uppercase tracking-tighter text-primary">Total Paid</span>
+                  <span className="text-2xl font-black text-primary">{formatNaira(selectedReceipt.amount)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-16 pt-8 border-t border-gray-100 text-center">
+              <p className="text-sm font-bold text-primary/40 uppercase tracking-widest italic mb-2">Thank you for your business!</p>
+              <p className="text-xs text-muted-foreground">Generated by BusinessBook Jotter</p>
+            </div>
+          </div>
+
+          {/* Action Sidebar */}
+          <div className="w-full md:w-64 space-y-4 no-print">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider">Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button onClick={handlePrint} className="w-full shadow-lg shadow-primary/20">
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print Receipt
+                </Button>
+                <Button variant="outline" onClick={handleDownloadPdf} className="w-full bg-white">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Separator className="my-4 bg-primary/10" />
+                <Button variant="ghost" onClick={() => setSelectedReceipt(null)} className="w-full">
+                  Back to History
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -9,11 +9,27 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { exportToCSV, ColumnHeader } from '@/lib/utils';
 import { Customer } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import CustomerForm from './CustomerForm';
+import { Edit2, Trash2 } from 'lucide-react';
 
 const CustomerDisplay = () => {
-  const { state } = useBusiness();
+  const { state, deleteCustomer } = useBusiness();
   const { customers } = state;
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleDeleteCustomer = async (id: string) => {
+    if (confirm('Are you sure you want to delete this customer?')) {
+      await deleteCustomer(id);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingCustomer(null);
+  };
 
   const filteredCustomers = useMemo(() => {
     if (!searchTerm) return customers || [];
@@ -70,6 +86,7 @@ const CustomerDisplay = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Date Added</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -81,11 +98,32 @@ const CustomerDisplay = () => {
                       <TableCell>{customer.email || '-'}</TableCell>
                       <TableCell>{customer.location || '-'}</TableCell>
                       <TableCell>{format(new Date(customer.dateAdded), 'dd/MM/yyyy')}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              setEditingCustomer(customer);
+                              setIsEditDialogOpen(true);
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDeleteCustomer(customer.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
                       {searchTerm ? 'No customers found matching your search.' : 'No customers added yet.'}
                     </TableCell>
                   </TableRow>
@@ -95,6 +133,20 @@ const CustomerDisplay = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Customer</DialogTitle>
+          </DialogHeader>
+          {editingCustomer && (
+            <CustomerForm 
+              initialData={editingCustomer} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

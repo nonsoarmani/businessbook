@@ -7,15 +7,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { exportToCSV, ColumnHeader, formatNaira } from '@/lib/utils';
 import { InventoryItem } from '@/types';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import InventoryForm from './InventoryForm';
+import { Edit2, Trash2 } from 'lucide-react';
 
 const InventoryDisplay = () => {
-  const { state } = useBusiness();
+  const { state, deleteInventoryItem } = useBusiness();
   const { inventory = [] } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleDeleteItem = async (id: string) => {
+    if (confirm('Are you sure you want to delete this item?')) {
+      await deleteInventoryItem(id);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingItem(null);
+  };
 
   // Get unique categories for filter
   const categories = useMemo(() => {
@@ -125,6 +142,7 @@ const InventoryDisplay = () => {
                     <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Cost</TableHead>
                     <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Selling</TableHead>
                     <TableHead className="text-xs md:text-sm whitespace-nowrap">Supplier</TableHead>
+                    <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -136,7 +154,12 @@ const InventoryDisplay = () => {
                           item.quantity <= (item.lowStockThreshold || 0) && "bg-destructive/10"
                         )}
                       >
-                        <TableCell className="font-medium text-xs md:text-sm whitespace-nowrap">{item.name}</TableCell>
+                        <TableCell className="font-medium text-xs md:text-sm whitespace-nowrap">
+                          {item.name}
+                          {item.quantity <= (item.lowStockThreshold || 0) && (
+                            <Badge variant="destructive" className="ml-2 text-[10px] h-4 px-1">Low</Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-xs md:text-sm whitespace-nowrap">{item.category}</TableCell>
                         <TableCell className={cn(
                           "text-right text-xs md:text-sm whitespace-nowrap",
@@ -147,11 +170,34 @@ const InventoryDisplay = () => {
                         <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(item.costPrice)}</TableCell>
                         <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(item.sellingPrice)}</TableCell>
                         <TableCell className="text-xs md:text-sm whitespace-nowrap">{item.supplier || '-'}</TableCell>
+                        <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setEditingItem(item);
+                                setIsEditDialogOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleDeleteItem(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
+                      <TableCell colSpan={7} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
                         No items found.
                       </TableCell>
                     </TableRow>
@@ -162,6 +208,20 @@ const InventoryDisplay = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Inventory Item</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <InventoryForm 
+              initialData={editingItem} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

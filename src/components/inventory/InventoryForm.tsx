@@ -14,6 +14,7 @@ import { generateUniqueId } from '@/lib/utils';
 import { InventoryItem } from '@/types';
 
 const inventoryFormSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(1, { message: 'Item name is required.' }),
   category: z.string().min(1, { message: 'Category is required.' }),
   quantity: z.preprocess(
@@ -39,11 +40,27 @@ const inventoryFormSchema = z.object({
 
 type InventoryFormValues = z.infer<typeof inventoryFormSchema>;
 
-const InventoryForm = () => {
-  const { dispatch } = useBusiness();
+interface InventoryFormProps {
+  initialData?: InventoryItem;
+  onSuccess?: () => void;
+}
+
+const InventoryForm = ({ initialData, onSuccess }: InventoryFormProps) => {
+  const { addInventoryItem, updateInventoryItem } = useBusiness();
   const form = useForm<InventoryFormValues>({
     resolver: zodResolver(inventoryFormSchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      id: initialData.id,
+      name: initialData.name,
+      category: initialData.category,
+      quantity: initialData.quantity,
+      unit: initialData.unit,
+      costPrice: initialData.costPrice,
+      sellingPrice: initialData.sellingPrice,
+      lowStockThreshold: initialData.lowStockThreshold || 0,
+      supplier: initialData.supplier || '',
+      notes: initialData.notes || '',
+    } : {
       name: '',
       category: '',
       quantity: 0,
@@ -56,29 +73,52 @@ const InventoryForm = () => {
     },
   });
 
-  const onSubmit = (values: InventoryFormValues) => {
+  const onSubmit = async (values: InventoryFormValues) => {
     try {
-      const newInventoryItem: InventoryItem = {
-        id: generateUniqueId(),
-        name: values.name,
-        category: values.category,
-        quantity: values.quantity,
-        unit: values.unit,
-        costPrice: values.costPrice,
-        sellingPrice: values.sellingPrice,
-        lowStockThreshold: values.lowStockThreshold || 0,
-        supplier: values.supplier || undefined,
-        notes: values.notes || undefined,
-        dateAdded: format(new Date(), 'yyyy-MM-dd'),
-        lastUpdated: format(new Date(), 'yyyy-MM-dd'),
-      };
+      if (initialData) {
+        const updatedItem: InventoryItem = {
+          ...initialData,
+          name: values.name,
+          category: values.category,
+          quantity: values.quantity,
+          unit: values.unit,
+          costPrice: values.costPrice,
+          sellingPrice: values.sellingPrice,
+          lowStockThreshold: values.lowStockThreshold || 0,
+          supplier: values.supplier || undefined,
+          notes: values.notes || undefined,
+          lastUpdated: format(new Date(), 'yyyy-MM-dd'),
+        };
+        await updateInventoryItem(updatedItem);
+        showSuccess('Inventory item updated successfully!');
+      } else {
+        const newInventoryItem: InventoryItem = {
+          id: generateUniqueId(),
+          name: values.name,
+          category: values.category,
+          quantity: values.quantity,
+          unit: values.unit,
+          costPrice: values.costPrice,
+          sellingPrice: values.sellingPrice,
+          lowStockThreshold: values.lowStockThreshold || 0,
+          supplier: values.supplier || undefined,
+          notes: values.notes || undefined,
+          dateAdded: format(new Date(), 'yyyy-MM-dd'),
+          lastUpdated: format(new Date(), 'yyyy-MM-dd'),
+        };
 
-      dispatch({ type: 'ADD_INVENTORY_ITEM', payload: newInventoryItem });
-      showSuccess('Inventory item added successfully!');
-      form.reset();
+        await addInventoryItem(newInventoryItem);
+        showSuccess('Inventory item added successfully!');
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset();
+      }
     } catch (error) {
-      console.error('Failed to add inventory item:', error);
-      showError('Failed to add inventory item. Please try again.');
+      console.error('Failed to save inventory item:', error);
+      showError('Failed to record inventory item. Please try again.');
     }
   };
 

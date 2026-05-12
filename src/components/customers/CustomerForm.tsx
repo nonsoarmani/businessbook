@@ -14,6 +14,7 @@ import { generateUniqueId } from '@/lib/utils';
 import { Customer } from '@/types';
 
 const customerFormSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(1, { message: 'Customer name is required.' }),
   phone: z.string().regex(/^0\d{10}$/, { message: 'Phone number must be 11 digits starting with 0.' }),
   email: z.string().email({ message: 'Invalid email address.' }).optional().or(z.literal('')),
@@ -22,11 +23,22 @@ const customerFormSchema = z.object({
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 
-const CustomerForm = () => {
-  const { dispatch } = useBusiness();
+interface CustomerFormProps {
+  initialData?: Customer;
+  onSuccess?: () => void;
+}
+
+const CustomerForm = ({ initialData, onSuccess }: CustomerFormProps) => {
+  const { addCustomer, updateCustomer } = useBusiness();
   const form = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      id: initialData.id,
+      name: initialData.name,
+      phone: initialData.phone,
+      email: initialData.email || '',
+      location: initialData.location || '',
+    } : {
       name: '',
       phone: '',
       email: '',
@@ -34,23 +46,40 @@ const CustomerForm = () => {
     },
   });
 
-  const onSubmit = (values: CustomerFormValues) => {
+  const onSubmit = async (values: CustomerFormValues) => {
     try {
-      const newCustomer: Customer = {
-        id: generateUniqueId(),
-        name: values.name,
-        phone: values.phone,
-        email: values.email || undefined,
-        location: values.location || undefined,
-        dateAdded: format(new Date(), 'yyyy-MM-dd'),
-      };
+      if (initialData) {
+        const updatedCustomer: Customer = {
+          ...initialData,
+          name: values.name,
+          phone: values.phone,
+          email: values.email || undefined,
+          location: values.location || undefined,
+        };
+        await updateCustomer(updatedCustomer);
+        showSuccess('Customer updated successfully!');
+      } else {
+        const newCustomer: Customer = {
+          id: generateUniqueId(),
+          name: values.name,
+          phone: values.phone,
+          email: values.email || undefined,
+          location: values.location || undefined,
+          dateAdded: format(new Date(), 'yyyy-MM-dd'),
+        };
 
-      dispatch({ type: 'ADD_CUSTOMER', payload: newCustomer });
-      showSuccess('Customer added successfully!');
-      form.reset();
+        await addCustomer(newCustomer);
+        showSuccess('Customer added successfully!');
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset();
+      }
     } catch (error) {
-      console.error('Failed to add customer:', error);
-      showError('Failed to add customer. Please try again.');
+      console.error('Failed to save customer:', error);
+      showError('Failed to record customer. Please try again.');
     }
   };
 

@@ -14,7 +14,7 @@ import { Task } from '@/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const TaskDisplay = () => {
-  const { state, dispatch } = useBusiness();
+  const { state, updateTask, deleteTask } = useBusiness();
   const { tasks } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -36,7 +36,7 @@ const TaskDisplay = () => {
     });
   }, [tasks, searchTerm, statusFilter, priorityFilter]);
 
-  const handleStatusChange = (taskId: string, newStatus: 'todo' | 'in-progress' | 'completed') => {
+  const handleStatusChange = async (taskId: string, newStatus: 'todo' | 'in-progress' | 'completed') => {
     try {
       const taskToUpdate = tasks.find(task => task.id === taskId);
       if (taskToUpdate) {
@@ -45,16 +45,16 @@ const TaskDisplay = () => {
           status: newStatus,
           completedAt: newStatus === 'completed' ? format(new Date(), 'yyyy-MM-dd') : undefined,
         };
-        dispatch({ type: 'UPDATE_TASK', payload: updatedTask });
+        await updateTask(updatedTask);
       }
     } catch (error) {
       console.error('Failed to update task status:', error);
     }
   };
 
-  const handleDeleteTask = (taskId: string) => {
+  const handleDeleteTask = async (taskId: string) => {
     try {
-      dispatch({ type: 'DELETE_TASK', payload: taskId });
+      await deleteTask(taskId);
     } catch (error) {
       console.error('Failed to delete task:', error);
     }

@@ -20,6 +20,9 @@ import LandingPage from "./pages/LandingPage";
 import { BusinessProvider } from "./state/businessStore";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -47,6 +50,8 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             
             {/* Protected App Routes */}
             <Route path="/app" element={
@@ -66,6 +71,7 @@ const App = () => (
               <Route path="cash-flow" element={<CashFlowPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="subscription" element={<Subscription />} />
+              <Route path="admin" element={<AdminDashboard />} />
             </Route>
 
             {/* Catch-all */}

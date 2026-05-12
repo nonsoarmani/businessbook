@@ -1,7 +1,23 @@
 "use client";
-import React, { createContext, useReducer, useContext, ReactNode } from 'react';
+import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
 import { BusinessState, BusinessAction, BusinessSettings } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
+import { useAuth } from '@/contexts/AuthContext';
+import { businessService } from '@/integrations/supabase/service';
+import { toast } from 'sonner';
+
+// Re-export toast for convenience if needed or use directly
+const showSuccess = (message: string) => {
+  toast.success(message, {
+    position: 'top-center',
+  });
+};
+
+const showError = (message: string) => {
+  toast.error(message, {
+    position: 'top-center',
+  });
+};
 
 const initialSettings: BusinessSettings = {
   businessName: 'My Business Jotter',
@@ -162,6 +178,11 @@ const businessReducer = (state: BusinessState, action: BusinessAction): Business
             : item
         ),
       };
+    case 'SET_STATE':
+      return {
+        ...state,
+        ...action.payload,
+      };
     case 'CLEAR_ALL_DATA':
       return initialState;
     default:
@@ -177,6 +198,7 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [persistedState, setPersistedState] = useLocalStorage<BusinessState>(
     'businessBookState',
     initialState
@@ -186,7 +208,56 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
 
   const [state, dispatch] = useReducer(businessReducer, mergedState);
 
-  React.useEffect(() => {
+  // Fetch data from Supabase when user logs in
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+
+      try {
+        const [
+          sales,
+          expenses,
+          debts,
+          receipts,
+          customers,
+          tasks,
+          inventory,
+          settings
+        ] = await Promise.all([
+          businessService.getSales(user.id),
+          businessService.getExpenses(user.id),
+          businessService.getDebts(user.id),
+          businessService.getReceipts(user.id),
+          businessService.getCustomers(user.id),
+          businessService.getTasks(user.id),
+          businessService.getInventory(user.id),
+          businessService.getSettings(user.id)
+        ]);
+
+        dispatch({
+          type: 'SET_STATE',
+          payload: {
+            sales,
+            expenses,
+            debts,
+            receipts,
+            customers,
+            tasks,
+            inventory,
+            settings: settings || state.settings
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching data from Supabase:', error);
+        toast.error('Failed to sync data with Supabase');
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  // Still sync to local storage as a backup/offline support
+  useEffect(() => {
     setPersistedState(state);
   }, [state, setPersistedState]);
 
@@ -199,8 +270,327 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
 
 export const useBusiness = () => {
   const context = useContext(BusinessContext);
+  const { user } = useAuth();
+
   if (context === undefined) {
     throw new Error('useBusiness must be used within a BusinessProvider');
   }
-  return context;
+
+  const { state, dispatch } = context;
+
+  // Enhanced dispatchers that also sync with Supabase
+  const addSale = async (sale: any) => {
+    dispatch({ type: 'ADD_SALE', payload: sale });
+    if (user) {
+      try {
+        await businessService.addSale(user.id, sale);
+      } catch (error) {
+        console.error('Error adding sale to Supabase:', error);
+        toast.error('Failed to save sale to cloud');
+      }
+    }
+  };
+
+  const updateSale = async (sale: any) => {
+    dispatch({ type: 'UPDATE_SALE', payload: sale });
+    if (user) {
+      try {
+        await businessService.updateSale(user.id, sale);
+      } catch (error) {
+        console.error('Error updating sale in Supabase:', error);
+        toast.error('Failed to update sale in cloud');
+      }
+    }
+  };
+
+  const deleteSale = async (id: string) => {
+    dispatch({ type: 'DELETE_SALE', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteSale(user.id, id);
+      } catch (error) {
+        console.error('Error deleting sale from Supabase:', error);
+        toast.error('Failed to delete sale from cloud');
+      }
+    }
+  };
+
+  const addExpense = async (expense: any) => {
+    dispatch({ type: 'ADD_EXPENSE', payload: expense });
+    if (user) {
+      try {
+        await businessService.addExpense(user.id, expense);
+      } catch (error) {
+        console.error('Error adding expense to Supabase:', error);
+        toast.error('Failed to save expense to cloud');
+      }
+    }
+  };
+
+  const updateExpense = async (expense: any) => {
+    dispatch({ type: 'UPDATE_EXPENSE', payload: expense });
+    if (user) {
+      try {
+        await businessService.updateExpense(user.id, expense);
+      } catch (error) {
+        console.error('Error updating expense in Supabase:', error);
+        toast.error('Failed to update expense in cloud');
+      }
+    }
+  };
+
+  const deleteExpense = async (id: string) => {
+    dispatch({ type: 'DELETE_EXPENSE', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteExpense(user.id, id);
+      } catch (error) {
+        console.error('Error deleting expense from Supabase:', error);
+        toast.error('Failed to delete expense from cloud');
+      }
+    }
+  };
+
+  const addDebt = async (debt: any) => {
+    dispatch({ type: 'ADD_DEBT', payload: debt });
+    if (user) {
+      try {
+        await businessService.addDebt(user.id, debt);
+      } catch (error) {
+        console.error('Error adding debt to Supabase:', error);
+        toast.error('Failed to save debt to cloud');
+      }
+    }
+  };
+
+  const updateDebt = async (debt: any) => {
+    dispatch({ type: 'UPDATE_DEBT', payload: debt });
+    if (user) {
+      try {
+        await businessService.updateDebt(user.id, debt);
+      } catch (error) {
+        console.error('Error updating debt in Supabase:', error);
+        toast.error('Failed to update debt in cloud');
+      }
+    }
+  };
+
+  const deleteDebt = async (id: string) => {
+    dispatch({ type: 'DELETE_DEBT', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteDebt(user.id, id);
+      } catch (error) {
+        console.error('Error deleting debt from Supabase:', error);
+        toast.error('Failed to delete debt from cloud');
+      }
+    }
+  };
+
+  const markDebtPaid = async (payload: { id: string; datePaid: string; paidAmount: number }) => {
+    dispatch({ type: 'MARK_DEBT_PAID', payload });
+    if (user) {
+      try {
+        const debt = state.debts.find(d => d.id === payload.id);
+        if (debt) {
+          await businessService.updateDebt(user.id, {
+            ...debt,
+            status: 'paid',
+            datePaid: payload.datePaid,
+            paidAmount: debt.originalAmount,
+            amountOwed: 0
+          });
+        }
+      } catch (error) {
+        console.error('Error marking debt as paid in Supabase:', error);
+        toast.error('Failed to update debt in cloud');
+      }
+    }
+  };
+
+  const addReceipt = async (receipt: any) => {
+    dispatch({ type: 'ADD_RECEIPT', payload: receipt });
+    if (user) {
+      try {
+        await businessService.addReceipt(user.id, receipt);
+      } catch (error) {
+        console.error('Error adding receipt to Supabase:', error);
+        toast.error('Failed to save receipt to cloud');
+      }
+    }
+  };
+
+  const addCustomer = async (customer: any) => {
+    dispatch({ type: 'ADD_CUSTOMER', payload: customer });
+    if (user) {
+      try {
+        await businessService.addCustomer(user.id, customer);
+      } catch (error) {
+        console.error('Error adding customer to Supabase:', error);
+        toast.error('Failed to save customer to cloud');
+      }
+    }
+  };
+
+  const updateCustomer = async (customer: any) => {
+    dispatch({ type: 'UPDATE_CUSTOMER', payload: customer });
+    if (user) {
+      try {
+        await businessService.updateCustomer(user.id, customer);
+      } catch (error) {
+        console.error('Error updating customer in Supabase:', error);
+        toast.error('Failed to update customer in cloud');
+      }
+    }
+  };
+
+  const deleteCustomer = async (id: string) => {
+    dispatch({ type: 'DELETE_CUSTOMER', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteCustomer(user.id, id);
+      } catch (error) {
+        console.error('Error deleting customer from Supabase:', error);
+        toast.error('Failed to delete customer from cloud');
+      }
+    }
+  };
+
+  const addTask = async (task: any) => {
+    dispatch({ type: 'ADD_TASK', payload: task });
+    if (user) {
+      try {
+        await businessService.addTask(user.id, task);
+      } catch (error) {
+        console.error('Error adding task to Supabase:', error);
+        toast.error('Failed to save task to cloud');
+      }
+    }
+  };
+
+  const updateTask = async (task: any) => {
+    dispatch({ type: 'UPDATE_TASK', payload: task });
+    if (user) {
+      try {
+        await businessService.updateTask(user.id, task);
+      } catch (error) {
+        console.error('Error updating task in Supabase:', error);
+        toast.error('Failed to update task in cloud');
+      }
+    }
+  };
+
+  const deleteTask = async (id: string) => {
+    dispatch({ type: 'DELETE_TASK', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteTask(user.id, id);
+      } catch (error) {
+        console.error('Error deleting task from Supabase:', error);
+        toast.error('Failed to delete task from cloud');
+      }
+    }
+  };
+
+  const addInventoryItem = async (item: any) => {
+    dispatch({ type: 'ADD_INVENTORY_ITEM', payload: item });
+    if (user) {
+      try {
+        await businessService.addInventoryItem(user.id, item);
+      } catch (error) {
+        console.error('Error adding inventory item to Supabase:', error);
+        toast.error('Failed to save inventory item to cloud');
+      }
+    }
+  };
+
+  const updateInventoryItem = async (item: any) => {
+    dispatch({ type: 'UPDATE_INVENTORY_ITEM', payload: item });
+    if (user) {
+      try {
+        await businessService.updateInventoryItem(user.id, item);
+      } catch (error) {
+        console.error('Error updating inventory item in Supabase:', error);
+        toast.error('Failed to update inventory item in cloud');
+      }
+    }
+  };
+
+  const deleteInventoryItem = async (id: string) => {
+    dispatch({ type: 'DELETE_INVENTORY_ITEM', payload: id });
+    if (user) {
+      try {
+        await businessService.deleteInventoryItem(user.id, id);
+      } catch (error) {
+        console.error('Error deleting inventory item from Supabase:', error);
+        toast.error('Failed to delete inventory item from cloud');
+      }
+    }
+  };
+
+  const updateInventoryQuantity = async (payload: { id: string; quantity: number; lastUpdated: string }) => {
+    dispatch({ type: 'UPDATE_INVENTORY_QUANTITY', payload });
+    if (user) {
+      try {
+        const item = state.inventory.find(i => i.id === payload.id);
+        if (item) {
+          await businessService.updateInventoryItem(user.id, {
+            ...item,
+            quantity: item.quantity + payload.quantity,
+            lastUpdated: payload.lastUpdated
+          });
+        }
+      } catch (error) {
+        console.error('Error updating inventory quantity in Supabase:', error);
+        toast.error('Failed to update inventory quantity in cloud');
+      }
+    }
+  };
+
+  const updateSettings = async (settings: BusinessSettings) => {
+    dispatch({ type: 'UPDATE_SETTINGS', payload: settings });
+    if (user) {
+      try {
+        await businessService.updateSettings(user.id, settings);
+      } catch (error) {
+        console.error('Error updating settings in Supabase:', error);
+        showError('Failed to save settings to cloud');
+      }
+    }
+  };
+
+  const updateLogo = async (logoUrl: string) => {
+    if (state.settings) {
+      const updatedSettings = { ...state.settings, businessLogoUrl: logoUrl };
+      await updateSettings(updatedSettings);
+    }
+  };
+
+  return {
+    state,
+    dispatch,
+    addSale,
+    updateSale,
+    deleteSale,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    addDebt,
+    updateDebt,
+    deleteDebt,
+    markDebtPaid,
+    addReceipt,
+    addCustomer,
+    updateCustomer,
+    deleteCustomer,
+    addTask,
+    updateTask,
+    deleteTask,
+    addInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
+    updateInventoryQuantity,
+    updateSettings,
+    updateLogo
+  };
 };

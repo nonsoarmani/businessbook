@@ -23,8 +23,12 @@ const taskFormSchema = z.object({
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
 
-const TaskForm = () => {
-  const { dispatch } = useBusiness();
+interface TaskFormProps {
+  onSuccess?: () => void;
+}
+
+const TaskForm = ({ onSuccess }: TaskFormProps) => {
+  const { addTask } = useBusiness();
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
@@ -35,7 +39,7 @@ const TaskForm = () => {
     },
   });
 
-  const onSubmit = (values: TaskFormValues) => {
+  const onSubmit = async (values: TaskFormValues) => {
     try {
       const newTask: Task = {
         id: generateUniqueId(),
@@ -47,14 +51,19 @@ const TaskForm = () => {
         createdAt: format(new Date(), 'yyyy-MM-dd'),
       };
 
-      dispatch({ type: 'ADD_TASK', payload: newTask });
+      await addTask(newTask);
       showSuccess('Task added successfully!');
-      form.reset({
-        title: '',
-        description: '',
-        dueDate: '',
-        priority: 'medium',
-      });
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset({
+          title: '',
+          description: '',
+          dueDate: '',
+          priority: 'medium',
+        });
+      }
     } catch (error) {
       console.error('Failed to add task:', error);
       showError('Failed to add task. Please try again.');

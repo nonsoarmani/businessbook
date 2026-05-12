@@ -7,6 +7,7 @@ export interface Sale {
   note?: string;
   customerName?: string;
   customerPhone?: string;
+  customerId?: string;
 }
 
 export interface Expense {
@@ -123,4 +124,5 @@ export type BusinessAction =
   | { type: 'ADD_INVENTORY_ITEM'; payload: InventoryItem }
   | { type: 'UPDATE_INVENTORY_ITEM'; payload: InventoryItem }
   | { type: 'DELETE_INVENTORY_ITEM'; payload: string }
-  | { type: 'UPDATE_INVENTORY_QUANTITY'; payload: { id: string; quantity: number; lastUpdated: string } };
+  | { type: 'UPDATE_INVENTORY_QUANTITY'; payload: { id: string; quantity: number; lastUpdated: string } }
+  | { type: 'SET_STATE'; payload: BusinessState };

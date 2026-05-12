@@ -4,7 +4,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { cn, generateUniqueId, formatNaira } from '@/lib/utils';
 import { useBusiness } from '@/state/businessStore';
 import { showSuccess, showError } from '@/utils/toast';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+
+import { Sale } from '@/types';
 
 const saleFormSchema = z.object({
+  id: z.string().optional(),
   item: z.string().min(1, { message: 'Item name is required.' }),
   amount: z.preprocess(
     (val) => Number(val),
@@ -40,6 +45,7 @@ const saleFormSchema = z.object({
   note: z.string().optional(),
   customerName: z.string().optional(),
   customerPhone: z.string().optional(),
+  existingCustomerId: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.paymentMethod === 'Credit') {
     if (!data.customerName || data.customerName.trim() === '') {
@@ -61,12 +67,29 @@ const saleFormSchema = z.object({
 
 type SaleFormValues = z.infer<typeof saleFormSchema>;
 
-const SaleForm = () => {
-  const { dispatch } = useBusiness();
+interface SaleFormProps {
+  initialData?: Sale;
+  onSuccess?: () => void;
+}
+
+const SaleForm = ({ initialData, onSuccess }: SaleFormProps) => {
+  const { state, addSale, addDebt, updateSale } = useBusiness();
+  const { customers } = state;
+  const [openCustomerSelect, setOpenCustomerSelect] = React.useState(false);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleFormSchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      id: initialData.id,
+      item: initialData.item,
+      amount: initialData.amount,
+      paymentMethod: initialData.paymentMethod,
+      date: parseISO(initialData.date),
+      note: initialData.note || '',
+      customerName: initialData.customerName || '',
+      customerPhone: initialData.customerPhone || '',
+      existingCustomerId: initialData.customerId || '',
+    } : {
       item: '',
       amount: undefined,
       paymentMethod: 'Cash',
@@ -74,53 +97,86 @@ const SaleForm = () => {
       note: '',
       customerName: '',
       customerPhone: '',
+      existingCustomerId: '',
     },
   });
 
   const paymentMethod = form.watch('paymentMethod');
 
-  const onSubmit = (values: SaleFormValues) => {
+  const handleCustomerSelect = (customerId: string) => {
+    const customer = customers.find((c) => c.id === customerId);
+    if (customer) {
+      form.setValue('existingCustomerId', customer.id);
+      form.setValue('customerName', customer.name);
+      form.setValue('customerPhone', customer.phone);
+    }
+    setOpenCustomerSelect(false);
+  };
+
+  const onSubmit = async (values: SaleFormValues) => {
     try {
-      const newSale = {
-        id: generateUniqueId(),
-        date: format(values.date, 'yyyy-MM-dd'),
-        item: values.item,
-        amount: values.amount,
-        paymentMethod: values.paymentMethod,
-        note: values.note,
-        customerName: values.paymentMethod === 'Credit' ? values.customerName : undefined,
-        customerPhone: values.paymentMethod === 'Credit' ? values.customerPhone : undefined,
-      };
-
-      dispatch({ type: 'ADD_SALE', payload: newSale });
-
-      if (values.paymentMethod === 'Credit') {
-        const newDebt = {
-          id: generateUniqueId(),
-          customerName: values.customerName!,
-          phone: values.customerPhone!,
-          originalAmount: values.amount,
-          amountOwed: values.amount,
-          dateGiven: format(values.date, 'yyyy-MM-dd'),
-          dueDate: format(values.date, 'yyyy-MM-dd'), // Default due date to same day, can be edited later
-          itemsSold: values.item,
-          status: 'active' as const,
+      if (initialData) {
+        const updatedSale: Sale = {
+          ...initialData,
+          date: format(values.date, 'yyyy-MM-dd'),
+          item: values.item,
+          amount: values.amount,
+          paymentMethod: values.paymentMethod,
+          note: values.note,
+          customerName: values.customerName || undefined,
+          customerPhone: values.customerPhone || undefined,
+          customerId: values.existingCustomerId || undefined,
         };
-        dispatch({ type: 'ADD_DEBT', payload: newDebt });
-        showSuccess('Sale recorded and new debt created!');
+        await updateSale(updatedSale);
+        showSuccess('Sale updated successfully!');
       } else {
-        showSuccess('Sale recorded successfully!');
+        const newSale: Sale = {
+          id: generateUniqueId(),
+          date: format(values.date, 'yyyy-MM-dd'),
+          item: values.item,
+          amount: values.amount,
+          paymentMethod: values.paymentMethod,
+          note: values.note,
+          customerName: values.customerName || undefined,
+          customerPhone: values.customerPhone || undefined,
+          customerId: values.existingCustomerId || undefined,
+        };
+
+        await addSale(newSale);
+
+        if (values.paymentMethod === 'Credit') {
+          const newDebt = {
+            id: generateUniqueId(),
+            customerName: values.customerName!,
+            phone: values.customerPhone!,
+            originalAmount: values.amount,
+            amountOwed: values.amount,
+            dateGiven: format(values.date, 'yyyy-MM-dd'),
+            dueDate: format(values.date, 'yyyy-MM-dd'), // Default due date to same day, can be edited later
+            itemsSold: values.item,
+            status: 'active' as const,
+          };
+          await addDebt(newDebt);
+          showSuccess('Sale recorded and new debt created!');
+        } else {
+          showSuccess('Sale recorded successfully!');
+        }
       }
 
-      form.reset({
-        item: '',
-        amount: undefined,
-        paymentMethod: 'Cash',
-        date: new Date(),
-        note: '',
-        customerName: '',
-        customerPhone: '',
-      });
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset({
+          item: '',
+          amount: undefined,
+          paymentMethod: 'Cash',
+          date: new Date(),
+          note: '',
+          customerName: '',
+          customerPhone: '',
+          existingCustomerId: '',
+        });
+      }
     } catch (error) {
       console.error('Failed to save sale:', error);
       showError('Failed to record sale. Please try again.');
@@ -206,8 +262,67 @@ const SaleForm = () => {
           )}
         />
 
-        {paymentMethod === 'Credit' && (
-          <>
+        <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold">
+              Customer Information {paymentMethod === 'Credit' ? '(Required)' : '(Optional)'}
+            </h3>
+          </div>
+          
+          <FormField
+            control={form.control}
+            name="existingCustomerId"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Select Existing Customer</FormLabel>
+                <Popover open={openCustomerSelect} onOpenChange={setOpenCustomerSelect}>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openCustomerSelect}
+                        className="w-full justify-between"
+                      >
+                        {field.value
+                          ? customers.find((c) => c.id === field.value)?.name
+                          : "Select a customer..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search customers..." />
+                      <CommandList>
+                        <CommandEmpty>No customer found.</CommandEmpty>
+                        <CommandGroup>
+                          {customers.map((customer) => (
+                            <CommandItem
+                              value={customer.name}
+                              key={customer.id}
+                              onSelect={() => handleCustomerSelect(customer.id)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  customer.id === field.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {customer.name} ({customer.phone})
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="customerName"
@@ -221,12 +336,13 @@ const SaleForm = () => {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="customerPhone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Customer Phone (e.g., 08012345678)</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., 08012345678" {...field} />
                   </FormControl>
@@ -234,8 +350,8 @@ const SaleForm = () => {
                 </FormItem>
               )}
             />
-          </>
-        )}
+          </div>
+        </div>
 
         <FormField
           control={form.control}

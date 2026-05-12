@@ -14,62 +14,57 @@ import { addMonths, addYears } from 'date-fns';
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "";
 
 const Subscription = () => {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const plans = [
     {
       name: 'Monthly Plan',
-      price: 2500,
+      price: 2000,
       interval: 'monthly',
-      description: 'Perfect for short-term projects',
-      features: ['Unlimited Shot Lists', 'PDF Exports', 'Custom Templates', 'Priority Support'],
-      amount: 250000, // in kobo
+      description: 'Flexible for growing businesses',
+      features: ['Unlimited Sales Records', 'Debt Tracking', 'Inventory Management', 'Basic Reports'],
+      planCode: import.meta.env.VITE_PAYSTACK_MONTHLY_PLAN_CODE,
     },
     {
       name: 'Yearly Plan',
-      price: 25000,
+      price: 20000,
       interval: 'yearly',
-      description: 'Best value for professional creators',
-      features: ['Everything in Monthly', '2 Months Free', 'Early Access to Features', 'Exclusive Creator Community'],
-      amount: 2500000, // in kobo
+      description: 'Best value for serious owners',
+      features: ['Everything in Monthly', 'Priority Support', 'Advanced Analytics', 'Custom Branding'],
+      planCode: import.meta.env.VITE_PAYSTACK_YEARLY_PLAN_CODE,
     }
   ];
 
-  const handlePaymentSuccess = async (reference: any, plan: any) => {
+  const handlePaymentSuccess = (reference: any, plan: any) => {
     setLoading(true);
-    try {
-      const endDate = plan.interval === 'monthly' 
-        ? addMonths(new Date(), 1) 
-        : addYears(new Date(), 1);
-
-      const { error: subError } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: user?.id,
-          plan_type: plan.interval,
-          status: 'active',
-          amount: plan.price,
-          paystack_reference: reference.reference,
-          end_date: endDate.toISOString(),
-        });
-
-      if (subError) throw subError;
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ subscription_status: 'pro' })
-        .eq('id', user?.id);
-
-      if (profileError) throw profileError;
-
-      showSuccess(`Successfully subscribed to the ${plan.name}!`);
-    } catch (error: any) {
-      showError(error.message || 'Failed to update subscription status.');
-    } finally {
-      setLoading(false);
-    }
+    // Redirect to verification edge function
+    const verifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-paystack?reference=${reference.reference}&userId=${user?.id}&plan=${plan.interval}`;
+    
+    fetch(verifyUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          showSuccess(`Successfully subscribed to the ${plan.name}!`);
+          refreshProfile();
+        } else {
+          showError(data.message || 'Payment verification failed.');
+        }
+      })
+      .catch(err => {
+        console.error('Verification error:', err);
+        showError('An error occurred during verification.');
+      })
+      .finally(() => setLoading(false));
   };
+
+  const paystackConfig = (plan: any) => ({
+    reference: (new Date()).getTime().toString(),
+    email: user?.email || '',
+    amount: plan.price * 100, // Paystack amount is in kobo
+    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
+    plan: plan.planCode, // This connects the payment to the Paystack plan
+  });
 
   const PaystackButton = ({ plan }: { plan: any }) => {
     const config = {

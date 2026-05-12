@@ -17,6 +17,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Expense } from '@/types';
 import type { DateRange } from "react-day-picker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ExpenseForm from './ExpenseForm';
+import { Edit2, Trash2 } from 'lucide-react';
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month' | 'Custom';
 type SortKey = 'date' | 'name' | 'amount' | 'category';
@@ -34,7 +37,7 @@ const expenseCategories = [
 ] as const;
 
 const ExpenseDisplay = () => {
-  const { state } = useBusiness();
+  const { state, deleteExpense } = useBusiness();
   const { expenses, sales } = state;
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('All');
   const [selectedCategory, setSelectedCategory] = useState<typeof expenseCategories[number]>('All');
@@ -42,6 +45,19 @@ const ExpenseDisplay = () => {
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Newest first by default
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleDeleteExpense = async (id: string) => {
+    if (confirm('Are you sure you want to delete this expense?')) {
+      await deleteExpense(id);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingExpense(null);
+  };
 
   const todaySales = useMemo(() => {
     const today = new Date();
@@ -248,6 +264,7 @@ const ExpenseDisplay = () => {
                       Amount
                       {sortKey === 'amount' && <ArrowUpDown className="ml-1 inline-block h-3 w-3" />}
                     </TableHead>
+                    <TableHead className="text-right text-xs md:text-sm whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -255,14 +272,37 @@ const ExpenseDisplay = () => {
                     filteredExpenses.map((expense) => (
                       <TableRow key={expense.id}>
                         <TableCell className="text-xs md:text-sm whitespace-nowrap">{format(parseISO(expense.date), 'dd/MM/yyyy')}</TableCell>
-                        <TableCell className="text-xs md:text-sm max-w-[120px] truncate">{expense.name}</TableCell>
+                        <TableCell className="text-xs md:text-sm max-w-[120px] truncate font-medium">{expense.name}</TableCell>
                         <TableCell className="text-xs md:text-sm whitespace-nowrap">{expense.category}</TableCell>
                         <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(expense.amount)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={() => {
+                                setEditingExpense(expense);
+                                setIsEditDialogOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
+                      <TableCell colSpan={5} className="h-24 text-center text-muted-foreground text-xs md:text-sm">
                         No expenses found.
                       </TableCell>
                     </TableRow>
@@ -325,6 +365,20 @@ const ExpenseDisplay = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Expense</DialogTitle>
+          </DialogHeader>
+          {editingExpense && (
+            <ExpenseForm 
+              initialData={editingExpense} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -26,6 +26,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Debt } from '@/types';
 
 const debtFormSchema = z.object({
+  id: z.string().optional(),
   customerName: z.string().min(1, { message: 'Customer name is required.' }),
   phone: z.string().regex(/^0\d{10}$/, { message: 'Phone number must be 11 digits starting with 0.' }),
   originalAmount: z.preprocess(
@@ -51,12 +52,25 @@ const debtFormSchema = z.object({
 
 type DebtFormValues = z.infer<typeof debtFormSchema>;
 
-const DebtForm = () => {
-  const { dispatch } = useBusiness();
+interface DebtFormProps {
+  initialData?: Debt;
+  onSuccess?: () => void;
+}
+
+const DebtForm = ({ initialData, onSuccess }: DebtFormProps) => {
+  const { addDebt, updateDebt } = useBusiness();
 
   const form = useForm<DebtFormValues>({
     resolver: zodResolver(debtFormSchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      id: initialData.id,
+      customerName: initialData.customerName,
+      phone: initialData.phone,
+      originalAmount: initialData.originalAmount,
+      itemsSold: initialData.itemsSold,
+      dateGiven: parseISO(initialData.dateGiven),
+      dueDate: parseISO(initialData.dueDate),
+    } : {
       customerName: '',
       phone: '',
       originalAmount: undefined,
@@ -66,30 +80,52 @@ const DebtForm = () => {
     },
   });
 
-  const onSubmit = (values: DebtFormValues) => {
+  const onSubmit = async (values: DebtFormValues) => {
     try {
-      const newDebt: Debt = {
-        id: generateUniqueId(),
-        customerName: values.customerName,
-        phone: values.phone,
-        originalAmount: values.originalAmount,
-        amountOwed: values.originalAmount, // Initially, amount owed is the original amount
-        dateGiven: format(values.dateGiven, 'yyyy-MM-dd'),
-        dueDate: format(values.dueDate, 'yyyy-MM-dd'),
-        itemsSold: values.itemsSold,
-        status: 'active', // Default status
-      };
+      if (initialData) {
+        const updatedDebt: Debt = {
+          ...initialData,
+          customerName: values.customerName,
+          phone: values.phone,
+          originalAmount: values.originalAmount,
+          // If editing original amount, we should probably update amountOwed too, 
+          // but for simplicity let's just keep the existing amountOwed logic or reset it if no payments were made
+          amountOwed: initialData.paidAmount ? (values.originalAmount - initialData.paidAmount) : values.originalAmount,
+          dateGiven: format(values.dateGiven, 'yyyy-MM-dd'),
+          dueDate: format(values.dueDate, 'yyyy-MM-dd'),
+          itemsSold: values.itemsSold,
+        };
+        await updateDebt(updatedDebt);
+        showSuccess('Debt updated successfully!');
+      } else {
+        const newDebt: Debt = {
+          id: generateUniqueId(),
+          customerName: values.customerName,
+          phone: values.phone,
+          originalAmount: values.originalAmount,
+          amountOwed: values.originalAmount,
+          dateGiven: format(values.dateGiven, 'yyyy-MM-dd'),
+          dueDate: format(values.dueDate, 'yyyy-MM-dd'),
+          itemsSold: values.itemsSold,
+          status: 'active',
+        };
 
-      dispatch({ type: 'ADD_DEBT', payload: newDebt });
-      showSuccess('Debt recorded successfully!');
-      form.reset({
-        customerName: '',
-        phone: '',
-        originalAmount: undefined,
-        itemsSold: '',
-        dateGiven: new Date(),
-        dueDate: new Date(),
-      });
+        await addDebt(newDebt);
+        showSuccess('Debt recorded successfully!');
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset({
+          customerName: '',
+          phone: '',
+          originalAmount: undefined,
+          itemsSold: '',
+          dateGiven: new Date(),
+          dueDate: new Date(),
+        });
+      }
     } catch (error) {
       console.error('Failed to save debt:', error);
       showError('Failed to record debt. Please try again.');

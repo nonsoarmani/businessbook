@@ -14,15 +14,31 @@ import { updateDebtStatus, calculateTotalOutstandingDebts, getOverdueDebts, getD
 import { Debt } from '@/types';
 import { showSuccess, showError } from '@/utils/toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import DebtForm from './DebtForm';
+import { Edit2, Trash2 } from 'lucide-react';
 
 type SortKey = 'customerName' | 'originalAmount' | 'amountOwed' | 'dateGiven' | 'dueDate' | 'status';
 
 const DebtDisplay = () => {
-  const { state, dispatch } = useBusiness();
+  const { state, markDebtPaid, deleteDebt } = useBusiness();
   const { debts } = state;
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('dueDate');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Oldest due date first by default
+  const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleDeleteDebt = async (id: string) => {
+    if (confirm('Are you sure you want to delete this debt?')) {
+      await deleteDebt(id);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingDebt(null);
+  };
 
   // Update debt statuses whenever debts change
   useEffect(() => {
@@ -85,15 +101,12 @@ const DebtDisplay = () => {
     }
   };
 
-  const handleMarkAsPaid = (debtId: string) => {
+  const handleMarkAsPaid = async (debtId: string) => {
     try {
-      dispatch({
-        type: 'MARK_DEBT_PAID',
-        payload: {
-          id: debtId,
-          datePaid: format(new Date(), 'yyyy-MM-dd'),
-          paidAmount: debts.find(d => d.id === debtId)?.originalAmount || 0
-        },
+      await markDebtPaid({
+        id: debtId,
+        datePaid: format(new Date(), 'yyyy-MM-dd'),
+        paidAmount: debts.find(d => d.id === debtId)?.originalAmount || 0
       });
       showSuccess('Debt marked as paid!');
     } catch (error) {
@@ -170,43 +183,58 @@ const DebtDisplay = () => {
                     {format(parseISO(debt.dueDate), 'dd/MM/yyyy')}
                   </TableCell>
                   <TableCell className="text-center">
-                    {debt.status !== 'paid' && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Mark Paid
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action will mark this debt as fully paid. This cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleMarkAsPaid(debt.id)}>
-                              Confirm Payment
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                    {debt.status === 'paid' && (
-                      <span className="text-success text-sm font-medium flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Paid
-                      </span>
-                    )}
+                    <div className="flex justify-center gap-2">
+                      {debt.status !== 'paid' && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Pay
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirm Payment</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Mark this debt from {debt.customerName} as fully paid?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleMarkAsPaid(debt.id)}>
+                                Confirm
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => {
+                          setEditingDebt(debt);
+                          setIsEditDialogOpen(true);
+                        }}
+                      >
+                        <Edit2 className="h-3 w-3 text-muted-foreground" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleDeleteDebt(debt.id)}
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  No {title.toLowerCase()} debts found.
+                  No debts found.
                 </TableCell>
               </TableRow>
             )}
@@ -217,47 +245,97 @@ const DebtDisplay = () => {
   );
 
   return (
-    <div className="space-y-8">
-      {/* Overall Summary Card */}
+    <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Overall Debt Summary</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="text-2xl font-bold">Debt Management</CardTitle>
+          <Button variant="outline" onClick={handleExportCSV}>
+            <FileText className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <p className="text-lg font-semibold">Total Outstanding Debts:</p>
-            <p className="text-3xl font-bold text-warning">{formatNaira(totalOutstanding)}</p>
+        <CardContent>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card className="bg-destructive/5 border-destructive/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-destructive">Overdue</p>
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                </div>
+                <p className="text-2xl font-bold text-destructive">{formatNaira(calculateTotalOutstandingDebts(overdueDebts))}</p>
+                <p className="text-xs text-muted-foreground mt-1">{overdueDebts.length} customers</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-warning/5 border-warning/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-warning">Due Soon</p>
+                  <Clock className="h-4 w-4 text-warning" />
+                </div>
+                <p className="text-2xl font-bold text-warning">{formatNaira(calculateTotalOutstandingDebts(debtsDueSoon))}</p>
+                <p className="text-xs text-muted-foreground mt-1">{debtsDueSoon.length} customers</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-primary">Active</p>
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-2xl font-bold text-primary">{formatNaira(calculateTotalOutstandingDebts(activeDebts))}</p>
+                <p className="text-xs text-muted-foreground mt-1">{activeDebts.length} customers</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-success/5 border-success/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-success">Total Outstanding</p>
+                  <FileText className="h-4 w-4 text-success" />
+                </div>
+                <p className="text-2xl font-bold text-success">{formatNaira(totalOutstanding)}</p>
+                <p className="text-xs text-muted-foreground mt-1">Overall balance</p>
+              </CardContent>
+            </Card>
           </div>
+
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by customer name, items or phone..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          {overdueDebts.length > 0 && renderDebtTable(overdueDebts, "Overdue Debts", AlertCircle, "text-destructive")}
+          {debtsDueSoon.length > 0 && renderDebtTable(debtsDueSoon, "Due Soon", Clock, "text-warning")}
+          {activeDebts.length > 0 && renderDebtTable(activeDebts, "Active Debts", Clock, "text-primary")}
+          {paidDebts.length > 0 && renderDebtTable(paidDebts, "Paid History", CheckCircle, "text-success")}
+          
+          {filteredDebts.length === 0 && (
+            <div className="text-center py-12 border rounded-lg bg-muted/20">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No debts matching your search criteria.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Debt History and Management */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Debt History & Management</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="relative w-full md:w-1/2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by customer name, phone, or items..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button variant="outline" onClick={handleExportCSV} className="w-full md:w-auto">
-              <FileText className="mr-2 h-4 w-4" />
-              Export to CSV
-            </Button>
-          </div>
-          {renderDebtTable(overdueDebts, 'Overdue Debts', XCircle, 'text-destructive')}
-          {renderDebtTable(debtsDueSoon, 'Debts Due Soon', Clock, 'text-warning')}
-          {renderDebtTable(activeDebts, 'Active Debts', AlertCircle, 'text-primary')}
-          {renderDebtTable(paidDebts, 'Paid Debts', CheckCircle, 'text-success')}
-        </CardContent>
-      </Card>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Debt</DialogTitle>
+          </DialogHeader>
+          {editingDebt && (
+            <DebtForm 
+              initialData={editingDebt} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

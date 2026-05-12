@@ -24,6 +24,7 @@ import { cn, generateUniqueId } from '@/lib/utils';
 import { useBusiness } from '@/state/businessStore';
 import { showSuccess, showError } from '@/utils/toast';
 import { Expense } from '@/types';
+import { parseISO } from 'date-fns';
 
 const expenseCategories = [
   'Stock/Inventory',
@@ -37,6 +38,7 @@ const expenseCategories = [
 ] as const;
 
 const expenseFormSchema = z.object({
+  id: z.string().optional(),
   name: z.string().min(1, { message: 'Expense name is required.' }),
   amount: z.preprocess(
     (val) => Number(val),
@@ -52,12 +54,23 @@ const expenseFormSchema = z.object({
 
 type ExpenseFormValues = z.infer<typeof expenseFormSchema>;
 
-const ExpenseForm = () => {
-  const { dispatch } = useBusiness();
+interface ExpenseFormProps {
+  initialData?: Expense;
+  onSuccess?: () => void;
+}
+
+const ExpenseForm = ({ initialData, onSuccess }: ExpenseFormProps) => {
+  const { addExpense, updateExpense } = useBusiness();
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseFormSchema),
-    defaultValues: {
+    defaultValues: initialData ? {
+      id: initialData.id,
+      name: initialData.name,
+      amount: initialData.amount,
+      category: initialData.category,
+      date: parseISO(initialData.date),
+    } : {
       name: '',
       amount: undefined,
       category: 'Other',
@@ -65,24 +78,41 @@ const ExpenseForm = () => {
     },
   });
 
-  const onSubmit = (values: ExpenseFormValues) => {
+  const onSubmit = async (values: ExpenseFormValues) => {
     try {
-      const newExpense: Expense = {
-        id: generateUniqueId(),
-        date: format(values.date, 'yyyy-MM-dd'),
-        name: values.name,
-        amount: values.amount,
-        category: values.category,
-      };
+      if (initialData) {
+        const updatedExpense: Expense = {
+          ...initialData,
+          date: format(values.date, 'yyyy-MM-dd'),
+          name: values.name,
+          amount: values.amount,
+          category: values.category,
+        };
+        await updateExpense(updatedExpense);
+        showSuccess('Expense updated successfully!');
+      } else {
+        const newExpense: Expense = {
+          id: generateUniqueId(),
+          date: format(values.date, 'yyyy-MM-dd'),
+          name: values.name,
+          amount: values.amount,
+          category: values.category,
+        };
 
-      dispatch({ type: 'ADD_EXPENSE', payload: newExpense });
-      showSuccess('Expense recorded successfully!');
-      form.reset({
-        name: '',
-        amount: undefined,
-        category: 'Other',
-        date: new Date(),
-      });
+        await addExpense(newExpense);
+        showSuccess('Expense recorded successfully!');
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset({
+          name: '',
+          amount: undefined,
+          category: 'Other',
+          date: new Date(),
+        });
+      }
     } catch (error) {
       console.error('Failed to save expense:', error);
       showError('Failed to record expense. Please try again.');

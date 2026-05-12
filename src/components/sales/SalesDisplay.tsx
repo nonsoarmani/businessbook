@@ -11,17 +11,33 @@ import { Separator } from '@/components/ui/separator';
 import { cn, formatNaira, exportToCSV, ColumnHeader } from '@/lib/utils';
 import { filterSalesByPeriod, calculateTotalSales, calculatePaymentMethodBreakdown, calculateWeekOverWeekComparison, getSalesForDay } from '@/utils/salesCalculations';
 import { Sale } from '@/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import SaleForm from './SaleForm';
+import { Edit2, Trash2 } from 'lucide-react';
 
 type FilterPeriod = 'All' | 'Today' | 'This Week' | 'This Month';
 type SortKey = 'date' | 'item' | 'amount' | 'paymentMethod';
 
 const SalesDisplay = () => {
-  const { state } = useBusiness();
+  const { state, deleteSale } = useBusiness();
   const { sales } = state;
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Newest first by default
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const handleDeleteSale = async (id: string) => {
+    if (confirm('Are you sure you want to delete this sale?')) {
+      await deleteSale(id);
+    }
+  };
+
+  const handleEditSuccess = () => {
+    setIsEditDialogOpen(false);
+    setEditingSale(null);
+  };
 
   const filteredSales = useMemo(() => {
     let currentSales = filterSalesByPeriod(sales, filterPeriod);
@@ -209,6 +225,7 @@ const SalesDisplay = () => {
                         />
                       )}
                     </TableHead>
+                    <TableHead className="text-right text-xs md:text-sm">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -219,11 +236,32 @@ const SalesDisplay = () => {
                         <TableCell className="text-xs md:text-sm max-w-[120px] md:max-w-none truncate">{sale.item}</TableCell>
                         <TableCell className="text-right text-xs md:text-sm whitespace-nowrap">{formatNaira(sale.amount)}</TableCell>
                         <TableCell className="text-xs md:text-sm whitespace-nowrap">{sale.paymentMethod}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setEditingSale(sale);
+                                setIsEditDialogOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleDeleteSale(sale.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="h-20 text-center text-muted-foreground text-xs md:text-sm">
+                      <TableCell colSpan={5} className="h-20 text-center text-muted-foreground text-xs md:text-sm">
                         No sales found.
                       </TableCell>
                     </TableRow>
@@ -234,6 +272,20 @@ const SalesDisplay = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Sale</DialogTitle>
+          </DialogHeader>
+          {editingSale && (
+            <SaleForm 
+              initialData={editingSale} 
+              onSuccess={handleEditSuccess} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

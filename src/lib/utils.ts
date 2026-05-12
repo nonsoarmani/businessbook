@@ -14,7 +14,7 @@ export function formatDate(date: Date | string, formatStr: string = 'dd/MM/yyyy'
 }
 
 export function generateUniqueId(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  return crypto.randomUUID();
 }
 
 export function formatNaira(amount: number): string {

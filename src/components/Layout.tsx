@@ -79,7 +79,7 @@ const Layout = () => {
                 </a>
               </Button>
             </div>
-            <ThemeToggle />
+            {/* <ThemeToggle /> */}
           </div>
         </header>
 

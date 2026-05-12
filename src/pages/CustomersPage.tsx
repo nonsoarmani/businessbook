@@ -1,27 +1,46 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import CustomerForm from '@/components/customers/CustomerForm';
 import CustomerDisplay from '@/components/customers/CustomerDisplay';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 
 const CustomersPage = () => {
+  const [showForm, setShowForm] = useState(false);
+
   return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Customer Management</h1>
-      <p className="text-muted-foreground mb-6">Manage your customer contacts and export their information.</p>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg md:text-xl font-semibold mb-4">Add New Customer</h2>
-          <div className="bg-card p-4 rounded-lg shadow-sm">
-            <CustomerForm />
+          <h1 className="text-3xl font-bold tracking-tight">Customer Management</h1>
+          <p className="text-muted-foreground">Manage your customer contacts and their information.</p>
+        </div>
+        {!showForm ? (
+          <Button onClick={() => setShowForm(true)} className="w-full md:w-auto">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add New Customer
+          </Button>
+        ) : (
+          <Button variant="outline" onClick={() => setShowForm(false)} className="w-full md:w-auto">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Customers
+          </Button>
+        )}
+      </div>
+
+      {showForm ? (
+        <div className="w-full">
+          <div className="bg-card border rounded-xl shadow-sm p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold">Add New Customer</h2>
+              <p className="text-sm text-muted-foreground">Enter the contact details of your new customer.</p>
+            </div>
+            <CustomerForm onSuccess={() => setShowForm(false)} />
           </div>
         </div>
-        
-        <div>
-          <h2 className="text-lg md:text-xl font-semibold mb-4">Customer Contacts</h2>
-          <CustomerDisplay />
-        </div>
-      </div>
+      ) : (
+        <CustomerDisplay />
+      )}
     </div>
   );
 };

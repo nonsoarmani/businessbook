@@ -8,18 +8,21 @@ interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  phone: string | null;
   avatar_url: string | null;
   subscription_status: 'free' | 'pro';
+  role: 'user' | 'admin';
 }
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
   refreshProfile: () => Promise<void>;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,21 +46,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-          setUser(session?.user || null);
+        async (event, session) => {
+          console.log('Auth event:', event);
+          
           if (session?.user) {
+            setUser(session.user);
             await fetchProfile(session.user.id);
           } else {
+            setUser(null);
             setProfile(null);
           }
+          
+          if (event === 'SIGNED_OUT') {
+            // Force clear state and potentially redirect
+            setUser(null);
+            setProfile(null);
+            localStorage.removeItem('businessBookState'); // Clear local business data on logout
+            window.location.href = '/login';
+          }
+          
           setLoading(false);
         }
       );
@@ -70,8 +95,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkSession();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    return await supabase.auth.signUp({ email, password });
+  const signUp = async (email: string, password: string, metadata?: any) => {
+    return await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: metadata
+      }
+    });
   };
 
   const signIn = async (email: string, password: string) => {
@@ -90,6 +121,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const isAdmin = profile?.role === 'admin';
+
   const value = {
     user,
     profile,
@@ -97,12 +130,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signIn,
     signOut,
     loading,
-    refreshProfile
+    refreshProfile,
+    isAdmin
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

@@ -51,8 +51,12 @@ const receiptFormSchema = z.object({
 
 type ReceiptFormValues = z.infer<typeof receiptFormSchema>;
 
-const ReceiptForm = () => {
-  const { state, dispatch } = useBusiness();
+interface ReceiptFormProps {
+  onSuccess?: () => void;
+}
+
+const ReceiptForm = ({ onSuccess }: ReceiptFormProps) => {
+  const { state, addReceipt } = useBusiness();
   const { sales } = state;
 
   const [openSaleSelect, setOpenSaleSelect] = useState(false);
@@ -92,7 +96,7 @@ const ReceiptForm = () => {
     setOpenSaleSelect(false);
   };
 
-  const onSubmit = (values: ReceiptFormValues) => {
+  const onSubmit = async (values: ReceiptFormValues) => {
     try {
       const newReceipt: Receipt = {
         id: generateUniqueId(),
@@ -106,18 +110,23 @@ const ReceiptForm = () => {
         linkedSaleId: values.linkedSaleId || undefined,
       };
 
-      dispatch({ type: 'ADD_RECEIPT', payload: newReceipt });
+      await addReceipt(newReceipt);
       showSuccess('Receipt generated successfully!');
-      form.reset({
-        receiptNumber: `REC-${generateUniqueId().substring(0, 8).toUpperCase()}`,
-        date: new Date(),
-        customerName: '',
-        customerPhone: '',
-        items: '',
-        amount: undefined,
-        paymentMethod: 'Cash',
-        linkedSaleId: '',
-      });
+      
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        form.reset({
+          receiptNumber: `REC-${generateUniqueId().substring(0, 8).toUpperCase()}`,
+          date: new Date(),
+          customerName: '',
+          customerPhone: '',
+          items: '',
+          amount: undefined,
+          paymentMethod: 'Cash',
+          linkedSaleId: '',
+        });
+      }
     } catch (error) {
       console.error('Failed to generate receipt:', error);
       showError('Failed to generate receipt. Please try again.');
