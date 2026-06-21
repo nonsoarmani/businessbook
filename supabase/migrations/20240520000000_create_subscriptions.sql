@@ -1,7 +1,7 @@
 -- Create subscriptions table
 CREATE TABLE IF NOT EXISTS public.subscriptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   plan_type TEXT NOT NULL, -- 'monthly' or 'yearly'
   status TEXT NOT NULL DEFAULT 'active',
   amount NUMERIC NOT NULL,
@@ -17,8 +17,15 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
 ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view their own subscription" ON public.subscriptions;
+DROP POLICY IF EXISTS "Admins can view all subscriptions" ON public.subscriptions;
+DROP POLICY IF EXISTS "Admin Full Access" ON public.subscriptions;
+
 CREATE POLICY "Users can view their own subscription" ON public.subscriptions
 FOR SELECT TO authenticated USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all subscriptions" ON public.subscriptions
+FOR SELECT TO authenticated USING (public.is_admin());
 
 CREATE POLICY "Users can insert their own subscription" ON public.subscriptions
 FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);

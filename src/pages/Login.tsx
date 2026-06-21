@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { showSuccess, showError } from '@/utils/toast';
 import { Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import logo from '@/assets/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -17,12 +18,22 @@ const Login = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isSignUp, setIsSignUp] = useState(location.pathname === '/signup');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  const { signIn, signUp, isAdmin } = useAuth();
+
+  useEffect(() => {
+    setIsSignUp(location.pathname === '/signup');
+  }, [location.pathname]);
+
+  const toggleMode = () => {
+    const newPath = isSignUp ? '/login' : '/signup';
+    navigate(newPath);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +51,25 @@ const Login = () => {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        showSuccess('Logged in successfully!');
-        navigate('/app');
+        
+        // Use a short delay to allow profile to be fetched by AuthContext
+        setTimeout(async () => {
+          // Re-check admin status from Supabase directly or wait for AuthContext
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', (await supabase.auth.getUser()).data.user?.id)
+            .single();
+
+          if (profileData?.role === 'admin') {
+            await supabase.auth.signOut();
+            showError('Please use the Admin Login page.');
+            navigate('/admin/login');
+          } else {
+            showSuccess('Logged in successfully!');
+            navigate('/app');
+          }
+        }, 500);
       }
     } catch (error: any) {
       showError(error.message || 'An error occurred during authentication.');
@@ -57,8 +85,12 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">
+        <CardHeader className="space-y-1 flex flex-col items-center text-center">
+          <div className="flex justify-center mb-5">
+            <img src={logo} alt="Jotter Logo" className="h-8 w-auto object-contain" />
+          </div>
+
+          <CardTitle className="text-2xl font-bold text-center">
             {isSignUp ? 'Create an account' : 'Sign in'}
           </CardTitle>
           <CardDescription>
@@ -170,7 +202,7 @@ const Login = () => {
               type="button"
               variant="link"
               className="text-xs"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={toggleMode}
             >
               {isSignUp
                 ? 'Already have an account? Sign In'

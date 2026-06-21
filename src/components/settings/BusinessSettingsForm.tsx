@@ -14,7 +14,10 @@ import { Upload, ImageIcon, Loader2 } from 'lucide-react';
 const businessSettingsSchema = z.object({
   businessName: z.string().min(1, { message: 'Business name is required.' }),
   businessEmail: z.string().email({ message: 'Invalid email address.' }).min(1, { message: 'Email is required.' }),
-  businessPhone: z.string().regex(/^0\d{10}$/, { message: 'Phone number must be 11 digits starting with 0.' }).min(1, { message: 'Phone number is required.' }),
+  businessPhone: z.string().min(1, { message: 'Phone number is required.' }).refine((val) => {
+    const cleanPhone = val.replace(/\s+/g, '');
+    return /^0\d{10}$/.test(cleanPhone);
+  }, { message: 'Phone number must be 11 digits starting with 0.' }),
   businessAddress: z.string().min(1, { message: 'Business address is required.' }),
   businessLogoUrl: z.string().url({ message: 'Invalid URL for logo.' }).optional().or(z.literal('')),
 });
@@ -125,7 +128,12 @@ const BusinessSettingsForm = () => {
         <div className="relative group">
           <div className="w-32 h-32 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted/20">
             {settings.businessLogoUrl ? (
-              <img src={settings.businessLogoUrl} alt="Business Logo" className="w-full h-full object-cover" />
+              <img 
+                src={settings.businessLogoUrl} 
+                alt="Business Logo" 
+                className="w-full h-full object-cover" 
+                crossOrigin="anonymous"
+              />
             ) : (
               <ImageIcon className="w-12 h-12 text-muted-foreground/40" />
             )}

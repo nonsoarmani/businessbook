@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
@@ -23,10 +23,18 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminPayment from "./pages/AdminPayment";
+import AdminUsersPage from "./pages/AdminCustomersPage";
+import AdminSalesPage from "./pages/AdminSalesPage";
+import AdminExpensesPage from "./pages/AdminExpensesPage";
+import AdminSubscriptionsPage from "./pages/AdminSubscriptionsPage";
+import AdminLogin from "./pages/AdminLogin";
+import SubscriptionGuard from "./components/notifications/SubscriptionGuard";
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, isSubscriptionActive } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -34,6 +42,28 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Temporary: Disable mandatory subscription redirect for testing
+  /*
+  if (!isSubscriptionActive && location.pathname !== '/app/subscription') {
+    return <Navigate to="/app/subscription" replace />;
+  }
+  */
+
+  return <>{children}</>;
+};
+
+// Admin Protected route component
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, profile, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user || !isAdmin) {
+    return <Navigate to="/admin/login" replace />;
   }
 
   return <>{children}</>;
@@ -45,11 +75,14 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AuthProvider>
+        <SubscriptionGuard />
         <BusinessProvider>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Login />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             
@@ -71,7 +104,21 @@ const App = () => (
               <Route path="cash-flow" element={<CashFlowPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="subscription" element={<Subscription />} />
-              <Route path="admin" element={<AdminDashboard />} />
+            </Route>
+
+            {/* Admin App Routes */}
+            <Route path="/admin" element={
+              <AdminRoute>
+                <Layout />
+              </AdminRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="sales" element={<AdminSalesPage />} />
+              <Route path="expenses" element={<AdminExpensesPage />} />
+              <Route path="payments" element={<AdminPayment />} />
+              <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
 
             {/* Catch-all */}

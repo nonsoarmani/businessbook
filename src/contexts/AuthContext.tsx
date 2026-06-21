@@ -12,6 +12,11 @@ interface Profile {
   avatar_url: string | null;
   subscription_status: 'free' | 'pro';
   role: 'user' | 'admin';
+  subscription?: {
+    status: string;
+    end_date: string;
+    plan_type: string;
+  } | null;
 }
 
 interface AuthContextType {
@@ -23,6 +28,7 @@ interface AuthContextType {
   loading: boolean;
   refreshProfile: () => Promise<void>;
   isAdmin: boolean;
+  isSubscriptionActive: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,16 +39,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (!error && data) {
-      setProfile(data);
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (profileError) throw profileError;
+
+      const { data: subData, error: subError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .order('end_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (profileData) {
+        setProfile({ ...profileData, subscription: subData });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
+
+  const isSubscriptionActive = React.useMemo(() => {
+    if (!profile) return false;
+    if (profile.role === 'admin') return true;
+    if (!profile.subscription) return false;
+    
+    const endDate = new Date(profile.subscription.end_date);
+    return endDate > new Date() && profile.subscription.status === 'active';
+  }, [profile]);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -79,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Force clear state and potentially redirect
             setUser(null);
             setProfile(null);
-            localStorage.removeItem('businessBookState'); // Clear local business data on logout
             window.location.href = '/login';
           }
           
@@ -131,7 +160,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut,
     loading,
     refreshProfile,
-    isAdmin
+    isAdmin,
+    isSubscriptionActive
   };
 
   return (

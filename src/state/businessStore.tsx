@@ -1,7 +1,6 @@
 "use client";
 import React, { createContext, useReducer, useContext, ReactNode, useEffect } from 'react';
 import { BusinessState, BusinessAction, BusinessSettings } from '@/types';
-import useLocalStorage from '@/hooks/useLocalStorage';
 import { useAuth } from '@/contexts/AuthContext';
 import { businessService } from '@/integrations/supabase/service';
 import { toast } from 'sonner';
@@ -199,14 +198,8 @@ const BusinessContext = createContext<BusinessContextType | undefined>(undefined
 
 export const BusinessProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
-  const [persistedState, setPersistedState] = useLocalStorage<BusinessState>(
-    'businessBookState',
-    initialState
-  );
 
-  const mergedState = { ...initialState, ...persistedState };
-
-  const [state, dispatch] = useReducer(businessReducer, mergedState);
+  const [state, dispatch] = useReducer(businessReducer, initialState);
 
   // Fetch data from Supabase when user logs in
   useEffect(() => {
@@ -255,11 +248,6 @@ export const BusinessProvider = ({ children }: { children: ReactNode }) => {
 
     fetchData();
   }, [user]);
-
-  // Still sync to local storage as a backup/offline support
-  useEffect(() => {
-    setPersistedState(state);
-  }, [state, setPersistedState]);
 
   return (
     <BusinessContext.Provider value={{ state, dispatch }}>

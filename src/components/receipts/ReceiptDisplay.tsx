@@ -122,7 +122,12 @@ const ReceiptDisplay = () => {
             <div className="flex justify-between items-start mb-8">
               <div>
                 {settings.businessLogoUrl ? (
-                  <img src={settings.businessLogoUrl} alt="Logo" className="h-16 w-auto mb-4 object-contain" />
+                  <img 
+                    src={settings.businessLogoUrl} 
+                    alt="Logo" 
+                    className="h-16 w-auto mb-4 object-contain" 
+                    crossOrigin="anonymous"
+                  />
                 ) : (
                   <div className="h-16 w-16 bg-primary/10 rounded flex items-center justify-center mb-4">
                     <span className="text-primary font-bold text-2xl">{settings.businessName?.charAt(0)}</span>

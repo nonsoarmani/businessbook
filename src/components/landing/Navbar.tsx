@@ -11,15 +11,15 @@ const Navbar = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-2">
           <img src={logo} alt="Jotter Logo" className="h-8 w-auto object-contain" />
-          <span className="text-xl font-bold text-green-700 hidden sm:inline-block">My Business Jotter</span>
+          {/* <span className="text-xl font-bold text-emerald-600 hidden sm:inline-block">My Business Jotter</span> */}
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" asChild className="text-green-700 hover:text-green-800 hover:bg-green-50">
+          <Button variant="ghost" asChild className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
             <Link to="/login">Sign In</Link>
           </Button>
-          <Button asChild className="bg-green-600 hover:bg-green-700 text-white">
-            <Link to="/login">Sign Up</Link>
+          <Button asChild className="bg-emerald-500 hover:bg-emerald-600 text-white">
+            <Link to="/signup">Sign Up</Link>
           </Button>
         </div>
       </div>

@@ -62,7 +62,6 @@ const Layout = () => {
             </Button>
             <div className="flex items-center gap-2">
               <img src={logo} alt="Jotter Logo" className="h-8 w-auto object-contain" />
-              <h1 className="font-bold text-lg md:text-xl text-primary truncate">My Business Jotter</h1>
             </div>
           </div>
           

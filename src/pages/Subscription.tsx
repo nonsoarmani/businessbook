@@ -8,16 +8,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check, CreditCard } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
-import { addMonths, addYears } from 'date-fns';
+import { format, addMonths, addYears, isAfter } from 'date-fns';
 
 // Using environment variable for the public key
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "";
 
 const Subscription = () => {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, isSubscriptionActive } = useAuth();
   const [loading, setLoading] = useState(false);
 
+  const subscription = profile?.subscription;
+  const isExpired = subscription && !isSubscriptionActive && profile?.role !== 'admin';
+
   const plans = [
+    {
+      name: 'One Day Test Plan',
+      price: 100,
+      interval: 'daily',
+      description: 'Perfect for testing out the features',
+      features: ['All Pro Features for 24 hours'],
+      planCode: '',
+    },
     {
       name: 'Monthly Plan',
       price: 2000,
@@ -36,49 +47,72 @@ const Subscription = () => {
     }
   ];
 
-  const handlePaymentSuccess = (reference: any, plan: any) => {
+  const handlePaymentSuccess = async (reference: any, plan: any) => {
     setLoading(true);
-    // Redirect to verification edge function
-    const verifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-paystack?reference=${reference.reference}&userId=${user?.id}&plan=${plan.interval}`;
-    
-    fetch(verifyUrl)
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') {
-          showSuccess(`Successfully subscribed to the ${plan.name}!`);
-          refreshProfile();
-        } else {
-          showError(data.message || 'Payment verification failed.');
-        }
-      })
-      .catch(err => {
-        console.error('Verification error:', err);
-        showError('An error occurred during verification.');
-      })
-      .finally(() => setLoading(false));
-  };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
 
-  const paystackConfig = (plan: any) => ({
-    reference: (new Date()).getTime().toString(),
-    email: user?.email || '',
-    amount: plan.price * 100, // Paystack amount is in kobo
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-    plan: plan.planCode, // This connects the payment to the Paystack plan
-  });
+      const verifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-paystack`;
+      console.log('Verifying at:', verifyUrl);
+      console.log('Payload:', { reference: reference.reference, userId: user?.id, plan: plan.interval, amount: plan.price });
+
+      const response = await fetch(verifyUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token || ''}`
+        },
+        body: JSON.stringify({
+          reference: reference.reference,
+          userId: user?.id,
+          plan: plan.interval,
+          amount: plan.price
+        })
+      });
+
+      // Log the raw response before parsing
+      const rawText = await response.text();
+      console.log('Raw response:', rawText);
+      console.log('HTTP status:', response.status);
+
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        showError(`Server returned invalid response: ${rawText.slice(0, 100)}`);
+        return;
+      }
+
+      if (data.status === 'success') {
+        showSuccess(`Successfully subscribed to the ${plan.name}!`);
+        await refreshProfile();
+      } else {
+        // Now shows the ACTUAL error message from the server
+        showError(data.message || 'Payment verification failed.');
+        console.error('Verification failed:', data);
+      }
+    } catch (err: any) {
+      console.error('Full verification error:', err);
+      showError(`Verification error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const PaystackButton = ({ plan }: { plan: any }) => {
     const config = {
       reference: (new Date()).getTime().toString(),
       email: user?.email || '',
-      amount: plan.amount,
+      amount: plan.price * 100, // Paystack amount is in kobo
       publicKey: PAYSTACK_PUBLIC_KEY,
+      plan: plan.planCode || undefined,
     };
 
     const initializePayment = usePaystackPayment(config);
 
     return (
-      <Button 
-        className="w-full" 
+      <Button
+        className="w-full"
         disabled={loading || !PAYSTACK_PUBLIC_KEY}
         onClick={() => {
           initializePayment({
@@ -100,7 +134,36 @@ const Subscription = () => {
         <p className="text-xl text-muted-foreground">Unlock professional tools to streamline your production workflow.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      {subscription && (
+        <Card className="max-w-4xl mx-auto mb-12 bg-muted/50">
+          <CardHeader>
+            <CardTitle>Current Subscription</CardTitle>
+            <CardDescription>
+              Details of your current plan
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <p className="font-semibold capitalize">{subscription.plan_type} Plan</p>
+              <p className="text-sm text-muted-foreground">
+                {isSubscriptionActive ? 'Expires' : 'Expired'} on {format(new Date(subscription.end_date), 'PPP')}
+              </p>
+            </div>
+            <div className={`px-4 py-1 rounded-full text-sm font-bold ${isSubscriptionActive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+              {isSubscriptionActive ? 'Active' : 'Expired'}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {isExpired && (
+        <div className="max-w-4xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-center">
+          <p className="font-bold">Your subscription has expired!</p>
+          <p>Please select a plan below to continue using the service.</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => (
           <Card key={plan.name} className={plan.interval === 'yearly' ? 'border-primary shadow-lg relative' : ''}>
             {plan.interval === 'yearly' && (

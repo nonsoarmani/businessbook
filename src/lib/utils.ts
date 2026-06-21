@@ -4,6 +4,22 @@ import { format, parseISO } from 'date-fns';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+/**
+ * Safely extracts a business name from a Supabase join result
+ * Handles both object and array return formats from PostgREST
+ */
+export function getBusinessName(businessSettings: any): string {
+  if (!businessSettings) return 'No Business Name';
+  
+  // If it's an array, take the first element
+  if (Array.isArray(businessSettings)) {
+    return businessSettings[0]?.business_name || 'No Business Name';
+  }
+  
+  // If it's a single object
+  return businessSettings.business_name || 'No Business Name';
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -62,7 +78,12 @@ export function exportToCSV<T>(filename: string, data: T[], headers: ColumnHeade
 }
 
 export async function exportReceiptToPDF(element: HTMLElement, filename: string) {
-  const canvas = await html2canvas(element, { scale: 2 }); // Scale for better resolution
+  const canvas = await html2canvas(element, { 
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    allowTaint: true
+  }); // Scale for better resolution
   const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF('p', 'mm', 'a4');
   const imgWidth = 210; // A4 width in mm

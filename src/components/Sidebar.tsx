@@ -18,7 +18,9 @@ import {
   X,
   LogOut,
   ListTodo,
-  Zap
+  Zap,
+  CreditCard,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -45,9 +47,21 @@ const navItems = [
   { name: 'Settings', icon: Settings, path: '/app/settings' },
 ];
 
+const adminNavItems = [
+  { name: 'Admin Dashboard', icon: ShieldCheck, path: '/admin' },
+  { name: 'All Users', icon: Users, path: '/admin/users' },
+  { name: 'All Sales', icon: ShoppingCart, path: '/admin/sales' },
+  { name: 'All Expenses', icon: Wallet, path: '/admin/expenses' },
+  { name: 'Payment Records', icon: CreditCard, path: '/admin/payments' },
+  { name: 'Subscriptions', icon: Zap, path: '/admin/subscriptions' },
+  // { name: 'System Settings', icon: Settings, path: '/admin/settings' },
+];
+
 const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   const isMobile = useIsMobile();
-  const { signOut, profile } = useAuth();
+  const { signOut, profile, isAdmin } = useAuth();
+
+  const currentNavItems = isAdmin ? adminNavItems : navItems;
 
   const handleSignOut = async () => {
     try {
@@ -74,14 +88,6 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
               alt="Jotter Logo" 
               className={cn("h-8 w-auto object-contain mb-1", isCollapsed && !isMobile && "h-6")} 
             />
-            <h1
-              className={cn(
-                "font-bold text-sm text-sidebar-primary transition-opacity duration-300 whitespace-nowrap",
-                !isMobile && isCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-              )}
-            >
-              My Business Jotter
-            </h1>
           </div>
           {(!isCollapsed || isMobile) && profile?.subscription_status === 'pro' && (
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
@@ -99,11 +105,11 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
 
       <ScrollArea className="flex-1 py-4">
         <nav className="grid items-start gap-1 px-2">
-          {navItems.map((item) => (
+          {currentNavItems.map((item) => (
             <NavLink
               key={item.name}
               to={item.path}
-              end={item.path === '/app'}
+              end={item.path === '/app' || item.path === '/admin'}
               onClick={isMobile ? onToggle : undefined}
               className={({ isActive }) =>
                 cn(

@@ -35,8 +35,12 @@ const receiptFormSchema = z.object({
     required_error: 'A date is required.',
   }),
   customerName: z.string().min(1, { message: 'Customer name is required.' }),
-  customerPhone: z.string().optional().refine((val) => !val || /^0\d{10}$/.test(val), {
-    message: 'Phone number must be 11 digits starting with 0, or empty.',
+  customerPhone: z.string().optional().refine((val) => {
+    if (!val) return true;
+    const cleanPhone = val.replace(/\s+/g, '');
+    return /^0\d{10}$/.test(cleanPhone);
+  }, {
+    message: 'Phone number must be 11 digits starting with 0.',
   }),
   items: z.string().min(1, { message: 'Items sold are required.' }),
   amount: z.preprocess(
