@@ -24,6 +24,7 @@ const AdminUsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      
       // Fetch profiles with business_settings join
       const { data, error } = await supabase
         .from('profiles')
